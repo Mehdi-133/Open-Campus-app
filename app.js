@@ -42,6 +42,7 @@
  *               message: modules route works
  */
 const express = require("express");
+const morgan = require("morgan");
 
 const courseRoutes = require("./routes/courseRoutes");
 const resourceRoutes = require("./routes/resourceRoutes");
@@ -94,6 +95,8 @@ app.use("/api/feedback", feedbackRouter);
 app.use("/api/quizzes", quizAttemptRoutes)
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+app.use(morgan("common"));
 
 app.use(notFound);
 app.use(errorHandler);
