@@ -1,4 +1,17 @@
+# Dependencies and build artifacts
 node_modules/
+dist/
+dist-ssr/
+.vite/
+coverage/
+
+# Secrets and local configuration
 .env
+.env.*
+!.env.example
+*.local
+
+# Runtime and OS files
 uploads/
-.playwright-cli/
+*.log
+.DS_Store
