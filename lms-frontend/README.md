@@ -1,3 +1,11 @@
+## Open Campus — Maquettes
+
+[Découvrir les maquettes et les choix de design](./figma.md) · [Ouvrir Figma](https://www.figma.com/design/JbOZK7KkH39wjATrHkUUqi/Open-Campus?node-id=0-1)
+
+Une interface teal et lilac, des cartes lisibles et des composants cohérents pour accompagner les étudiants et simplifier la gestion du campus.
+
+---
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
