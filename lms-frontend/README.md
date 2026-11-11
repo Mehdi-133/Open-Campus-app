@@ -4,6 +4,12 @@
 
 Une interface teal et lilac, des cartes lisibles et des composants cohérents pour accompagner les étudiants et simplifier la gestion du campus.
 
+## Planification Jira
+
+[Consulter la planification et l’organisation du backlog](./jira-planification.md) · [Ouvrir le tableau OCF](https://mehdikarbitou-1769453505855.atlassian.net/jira/software/projects/OCF/boards/266)
+
+Des epics aux sous-tâches : un suivi clair pour construire, vérifier et livrer Open Campus.
+
 ---
 
 # React + Vite
