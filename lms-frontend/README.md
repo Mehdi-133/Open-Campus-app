@@ -1,3 +1,17 @@
+## Open Campus — Maquettes
+
+[Découvrir les maquettes et les choix de design](./figma.md) · [Ouvrir Figma](https://www.figma.com/design/JbOZK7KkH39wjATrHkUUqi/Open-Campus?node-id=0-1)
+
+Une interface teal et lilac, des cartes lisibles et des composants cohérents pour accompagner les étudiants et simplifier la gestion du campus.
+
+## Planification Jira
+
+[Consulter la planification et l’organisation du backlog](./jira-planification.md) · [Ouvrir le tableau OCF](https://mehdikarbitou-1769453505855.atlassian.net/jira/software/projects/OCF/boards/266)
+
+Des epics aux sous-tâches : un suivi clair pour construire, vérifier et livrer Open Campus.
+
+---
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.

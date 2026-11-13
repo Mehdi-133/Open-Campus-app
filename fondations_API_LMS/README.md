@@ -509,6 +509,10 @@ Ports exposés :
 | API | 3000 |
 | MongoDB depuis l'hôte | 27018 |
 
+Si le port 3000 est déjà utilisé, ajouter `API_HOST_PORT=3001` dans `.env`.
+L'API et Swagger seront alors accessibles sur `http://localhost:3001` et
+`http://localhost:3001/api-docs/`. Le port interne du conteneur reste 3000.
+
 Dans le réseau Docker Compose, l'API utilise :
 
 ```text
