@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { AdminLayout } from './components/AdminLayout.jsx'
 import { LearnerLayout } from './components/LearnerLayout.jsx'
+import { UnsupportedRoleNotice } from './components/UnsupportedRoleNotice.jsx'
 import { ADMIN_NAVIGATION, LEARNER_NAVIGATION } from './components/navigation.js'
 import './App.css'
 
@@ -35,14 +36,7 @@ function App() {
     return <LearnerLayout activeView={currentView} onNavigate={setActiveView} user={session.user} />
   }
 
-  return (
-    <main className="session-placeholder">
-      <span className="brand-mark" aria-hidden="true">OC</span>
-      <p className="eyebrow">ESPACE INDISPONIBLE</p>
-      <h1>Ce rôle n’est pas encore pris en charge</h1>
-      <p>Les outils formateur ne sont pas disponibles dans cette version.</p>
-    </main>
-  )
+  return <UnsupportedRoleNotice role={session.user.role} />
 }
 
 export default App

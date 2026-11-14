@@ -54,7 +54,7 @@ export function AppShell({ activeView, navigation, onNavigate, roleLabel, user, 
             <span className="app-header__context">{roleLabel} / Espace de travail</span>
             <h1>{currentPage.label}</h1>
           </div>
-          <div className="account-chip">
+          <div className="account-chip" role="group" aria-label={`Compte ${displayName} — ${roleLabel}`}>
             <span className="account-chip__avatar" aria-hidden="true">
               {displayName.slice(0, 1).toUpperCase()}
             </span>

@@ -440,3 +440,163 @@
 .app-content__heading--section {
   margin-top: 30px;
 }
+
+@media (max-width: 760px) {
+  .app-shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .app-sidebar {
+    min-height: auto;
+    padding: 15px 18px 10px;
+    border-right: 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .app-brand {
+    margin: 0 0 13px 2px;
+    font-size: 15px;
+  }
+
+  .app-brand .brand-mark {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+  }
+
+  .app-navigation {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 0 2px 4px;
+    scrollbar-width: thin;
+  }
+
+  .app-navigation__item {
+    width: auto;
+    min-height: 44px;
+    flex: 0 0 auto;
+    padding-inline: 12px;
+    white-space: nowrap;
+  }
+
+  .app-sidebar__note {
+    display: none;
+  }
+
+  .app-header {
+    min-height: 72px;
+    padding: 12px 20px;
+  }
+
+  .app-content {
+    min-height: calc(100vh - 72px);
+    padding: 24px 20px 32px;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  .dashboard-section {
+    grid-column: auto;
+  }
+
+  .dashboard-hero {
+    min-height: 230px;
+    padding: 28px;
+  }
+
+  .dashboard-side-card {
+    min-height: 160px;
+  }
+}
+
+@media (max-width: 500px) {
+  .app-header {
+    gap: 10px;
+    padding-inline: 15px;
+  }
+
+  .app-header__title h1 {
+    max-width: 56vw;
+    overflow: hidden;
+    font-size: 18px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .app-header__context {
+    font-size: 10px;
+  }
+
+  .account-chip {
+    padding: 3px;
+    background: transparent;
+  }
+
+  .account-chip__identity {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+
+  .account-chip__avatar {
+    width: 36px;
+    height: 36px;
+  }
+
+  .app-content {
+    padding: 20px 15px 28px;
+  }
+
+  .app-content__heading h2 {
+    font-size: 23px;
+  }
+
+  .dashboard-hero {
+    min-height: 220px;
+    padding: 24px 22px;
+  }
+
+  .dashboard-hero h3 {
+    font-size: 27px;
+    letter-spacing: -0.8px;
+  }
+
+  .dashboard-side-card {
+    min-height: 145px;
+    padding: 21px;
+  }
+
+  .management-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .management-card,
+  .empty-course-card {
+    min-height: 136px;
+    padding: 18px;
+  }
+
+  .empty-course-card {
+    align-items: flex-start;
+  }
+
+  .information-panel {
+    padding: 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
