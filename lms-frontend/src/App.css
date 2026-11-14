@@ -87,6 +87,7 @@
 }
 
 .app-navigation__item {
+  width: 100%;
   min-height: 46px;
   display: flex;
   align-items: center;
@@ -94,8 +95,17 @@
   padding: 0 13px;
   border-radius: 10px;
   color: #4d5660;
+  border: 0;
+  background: transparent;
+  font: inherit;
   font-size: 14px;
   font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.app-navigation__item:hover:not(.is-active) {
+  background: #f5f7ff;
 }
 
 .app-navigation__item.is-active {
@@ -301,6 +311,16 @@
   letter-spacing: -0.4px;
 }
 
+.section-link {
+  padding: 8px 2px;
+  border: 0;
+  color: var(--color-teal-dark);
+  background: transparent;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .management-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -314,6 +334,23 @@
   border: 1px solid var(--color-border);
   border-radius: 16px;
   background: var(--color-surface);
+}
+
+.management-card {
+  position: relative;
+  display: block;
+  width: 100%;
+  color: var(--color-ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 140ms ease, box-shadow 140ms ease, transform 140ms ease;
+}
+
+.management-card:hover {
+  border-color: #b6dedb;
+  box-shadow: 0 8px 22px #123c3a0d;
+  transform: translateY(-1px);
 }
 
 .management-card__icon,
@@ -343,6 +380,14 @@
   font-size: 15px;
 }
 
+.management-card__arrow {
+  position: absolute;
+  top: 25px;
+  right: 20px;
+  color: var(--color-teal-dark);
+  font-size: 18px;
+}
+
 .empty-course-card {
   display: flex;
   align-items: center;
@@ -357,4 +402,41 @@
 
 .empty-course-card h4 {
   margin-bottom: 5px;
+}
+
+.information-panel {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 22px;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  background: var(--color-surface);
+}
+
+.information-panel__icon {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  flex: none;
+  border-radius: 50%;
+  color: #145c5b;
+  background: #e3f8f6;
+  font-weight: 700;
+}
+
+.information-panel h3 {
+  margin-bottom: 5px;
+  font-size: 15px;
+}
+
+.information-panel p {
+  color: var(--color-muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.app-content__heading--section {
+  margin-top: 30px;
 }

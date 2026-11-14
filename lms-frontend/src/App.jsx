@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { AdminLayout } from './components/AdminLayout.jsx'
 import { LearnerLayout } from './components/LearnerLayout.jsx'
+import { ADMIN_NAVIGATION, LEARNER_NAVIGATION } from './components/navigation.js'
 import './App.css'
 
 function App() {
   const [session] = useState(null)
-  const [activeView] = useState('overview')
+  const [activeView, setActiveView] = useState('overview')
 
   if (!session?.user) {
     return (
@@ -19,11 +20,19 @@ function App() {
   }
 
   if (session.user.role === 'admin') {
-    return <AdminLayout activeView={activeView} user={session.user} />
+    const currentView = ADMIN_NAVIGATION.some((item) => item.id === activeView)
+      ? activeView
+      : ADMIN_NAVIGATION[0].id
+
+    return <AdminLayout activeView={currentView} onNavigate={setActiveView} user={session.user} />
   }
 
   if (session.user.role === 'learner') {
-    return <LearnerLayout activeView={activeView} user={session.user} />
+    const currentView = LEARNER_NAVIGATION.some((item) => item.id === activeView)
+      ? activeView
+      : LEARNER_NAVIGATION[0].id
+
+    return <LearnerLayout activeView={currentView} onNavigate={setActiveView} user={session.user} />
   }
 
   return (

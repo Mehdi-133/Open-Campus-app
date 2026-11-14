@@ -23,7 +23,7 @@ function NavigationIcon({ name }) {
   )
 }
 
-export function AppShell({ activeView, navigation, roleLabel, user, children }) {
+export function AppShell({ activeView, navigation, onNavigate, roleLabel, user, children }) {
   const currentPage = navigation.find((item) => item.id === activeView) || navigation[0]
   const displayName = user.name || user.email
 
@@ -33,14 +33,16 @@ export function AppShell({ activeView, navigation, roleLabel, user, children }) 
         <div className="app-brand"><BrandMark /><span>Open Campus</span></div>
         <nav className="app-navigation" aria-label="Navigation principale">
           {navigation.map((item) => (
-            <span
+            <button
               aria-current={item.id === currentPage.id ? 'page' : undefined}
               className={`app-navigation__item${item.id === currentPage.id ? ' is-active' : ''}`}
               key={item.id}
+              onClick={() => onNavigate(item.id)}
+              type="button"
             >
               <NavigationIcon name={item.icon} />
               {item.label}
-            </span>
+            </button>
           ))}
         </nav>
         <div className="app-sidebar__note">Apprendre, à votre rythme.</div>
