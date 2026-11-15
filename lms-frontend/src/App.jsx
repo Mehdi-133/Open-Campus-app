@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { getCurrentUser, login } from './api/auth.js'
 import { AdminLayout } from './components/AdminLayout.jsx'
 import { LearnerLayout } from './components/LearnerLayout.jsx'
 import { UnsupportedRoleNotice } from './components/UnsupportedRoleNotice.jsx'
@@ -7,11 +8,14 @@ import { LoginForm } from './components/LoginForm.jsx'
 import './App.css'
 
 function App() {
-  const [session] = useState(null)
+  const [session, setSession] = useState(null)
   const [activeView, setActiveView] = useState('overview')
 
-  async function handleLogin() {
-    throw new Error('La connexion au serveur sera activée à la prochaine étape.')
+  async function handleLogin(credentials) {
+    const token = await login(credentials)
+    const user = await getCurrentUser(token)
+
+    setSession({ token, user })
   }
 
   if (!session?.user) {
