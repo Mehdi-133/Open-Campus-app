@@ -467,6 +467,30 @@
   background: #f4f6fc;
 }
 
+.account-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logout-button {
+  min-height: 38px;
+  padding: 8px 12px;
+  border: 1px solid #c9d5d8;
+  border-radius: 9px;
+  color: var(--color-teal-dark);
+  background: var(--color-surface);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.logout-button:hover {
+  border-color: var(--color-teal-dark);
+  background: #e9f8f6;
+}
+
 .account-chip__avatar {
   width: 37px;
   height: 37px;
@@ -875,6 +899,14 @@
   .account-chip {
     padding: 3px;
     background: transparent;
+  }
+
+  .account-actions { gap: 4px; }
+
+  .logout-button {
+    min-height: 36px;
+    padding-inline: 9px;
+    font-size: 11px;
   }
 
   .account-chip__identity {

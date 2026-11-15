@@ -41,13 +41,14 @@ function LearnerDashboard({ onNavigate, user }) {
   )
 }
 
-export function LearnerLayout({ activeView, onNavigate, user }) {
+export function LearnerLayout({ activeView, onLogout, onNavigate, user }) {
   const pageTitle = LEARNER_NAVIGATION.find((item) => item.id === activeView)?.label
 
   return (
     <AppShell
       activeView={activeView}
       navigation={LEARNER_NAVIGATION}
+      onLogout={onLogout}
       onNavigate={onNavigate}
       roleLabel="Apprenant"
       user={user}

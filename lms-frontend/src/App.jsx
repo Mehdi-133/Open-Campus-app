@@ -19,6 +19,11 @@ function App() {
     setSession({ token, user })
   }
 
+  function handleLogout() {
+    setSession(null)
+    setActiveView('overview')
+  }
+
   if (!session?.user) {
     return (
       <main className="auth-page">
@@ -53,7 +58,7 @@ function App() {
       ? activeView
       : ADMIN_NAVIGATION[0].id
 
-    return <AdminLayout activeView={currentView} onNavigate={setActiveView} user={session.user} />
+    return <AdminLayout activeView={currentView} onLogout={handleLogout} onNavigate={setActiveView} user={session.user} />
   }
 
   if (session.user.role === 'learner') {
@@ -61,10 +66,10 @@ function App() {
       ? activeView
       : LEARNER_NAVIGATION[0].id
 
-    return <LearnerLayout activeView={currentView} onNavigate={setActiveView} user={session.user} />
+    return <LearnerLayout activeView={currentView} onLogout={handleLogout} onNavigate={setActiveView} user={session.user} />
   }
 
-  return <UnsupportedRoleNotice role={session.user.role} />
+  return <UnsupportedRoleNotice onLogout={handleLogout} role={session.user.role} />
 }
 
 export default App
