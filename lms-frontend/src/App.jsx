@@ -3,19 +3,29 @@ import { AdminLayout } from './components/AdminLayout.jsx'
 import { LearnerLayout } from './components/LearnerLayout.jsx'
 import { UnsupportedRoleNotice } from './components/UnsupportedRoleNotice.jsx'
 import { ADMIN_NAVIGATION, LEARNER_NAVIGATION } from './components/navigation.js'
+import { LoginForm } from './components/LoginForm.jsx'
 import './App.css'
 
 function App() {
   const [session] = useState(null)
   const [activeView, setActiveView] = useState('overview')
 
+  async function handleLogin() {
+    throw new Error('La connexion au serveur sera activée à la prochaine étape.')
+  }
+
   if (!session?.user) {
     return (
-      <main className="session-placeholder">
-        <span className="brand-mark" aria-hidden="true">OC</span>
-        <p className="eyebrow">OPEN CAMPUS</p>
-        <h1>Votre espace de formation</h1>
-        <p>Connectez-vous pour afficher les informations associées à votre compte.</p>
+      <main className="auth-page">
+        <section className="auth-card">
+          <div className="auth-card__story" aria-hidden="true">
+            <span className="brand-mark">OC</span>
+            <p>Votre parcours commence ici.</p>
+          </div>
+          <div className="auth-card__form">
+            <LoginForm onSubmit={handleLogin} />
+          </div>
+        </section>
       </main>
     )
   }
