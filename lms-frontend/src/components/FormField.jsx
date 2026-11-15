@@ -1,5 +1,6 @@
 export function FormField({
   autoComplete,
+  endAdornment,
   error,
   id,
   label,
@@ -11,16 +12,19 @@ export function FormField({
   return (
     <div className="form-field">
       <label htmlFor={id}>{label}</label>
-      <input
-        aria-describedby={error ? `${id}-error` : undefined}
-        aria-invalid={Boolean(error)}
-        autoComplete={autoComplete}
-        id={id}
-        name={name}
-        onChange={onChange}
-        type={type}
-        value={value}
-      />
+      <div className="form-field__input-wrap">
+        <input
+          aria-describedby={error ? `${id}-error` : undefined}
+          aria-invalid={Boolean(error)}
+          autoComplete={autoComplete}
+          id={id}
+          name={name}
+          onChange={onChange}
+          type={type}
+          value={value}
+        />
+        {endAdornment}
+      </div>
       {error ? <p className="form-field__error" id={`${id}-error`}>{error}</p> : null}
     </div>
   )

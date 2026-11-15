@@ -23,6 +23,7 @@ export function LoginForm({ onSubmit }) {
   const [values, setValues] = useState({ email: '', password: '' })
   const [errors, setErrors] = useState({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false)
   const [submitError, setSubmitError] = useState('')
 
   function updateField(event) {
@@ -64,9 +65,9 @@ export function LoginForm({ onSubmit }) {
   return (
     <form className="login-form" noValidate onSubmit={handleSubmit}>
       <div className="login-form__heading">
-        <p className="eyebrow">OPEN CAMPUS</p>
-        <h1>Bon retour parmi nous</h1>
-        <p>Connectez-vous pour retrouver votre espace de formation.</p>
+        <p className="eyebrow">VOTRE ESPACE D’APPRENTISSAGE</p>
+        <h1>Bon retour.</h1>
+        <p>Connectez-vous pour continuer votre parcours.</p>
       </div>
 
       <FormField
@@ -86,7 +87,18 @@ export function LoginForm({ onSubmit }) {
         label="Mot de passe"
         name="password"
         onChange={updateField}
-        type="password"
+        endAdornment={(
+          <button
+            aria-controls="login-password"
+            aria-pressed={isPasswordVisible}
+            className="password-toggle"
+            onClick={() => setIsPasswordVisible((visible) => !visible)}
+            type="button"
+          >
+            {isPasswordVisible ? 'Masquer' : 'Afficher'}
+          </button>
+        )}
+        type={isPasswordVisible ? 'text' : 'password'}
         value={values.password}
       />
 

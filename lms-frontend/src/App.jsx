@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { getCurrentUser, login } from './api/auth.js'
+import { BrandLogo } from './components/BrandLogo.jsx'
 import { AdminLayout } from './components/AdminLayout.jsx'
 import { LearnerLayout } from './components/LearnerLayout.jsx'
 import { UnsupportedRoleNotice } from './components/UnsupportedRoleNotice.jsx'
@@ -22,10 +23,23 @@ function App() {
     return (
       <main className="auth-page">
         <section className="auth-card">
-          <div className="auth-card__story" aria-hidden="true">
-            <span className="brand-mark">OC</span>
-            <p>Votre parcours commence ici.</p>
-          </div>
+          <aside className="auth-card__story">
+            <BrandLogo light />
+            <div className="auth-card__story-copy">
+              <p className="auth-card__overline">UNE NOUVELLE FAÇON D’APPRENDRE</p>
+              <h2>Apprenez à votre rythme, allez plus loin.</h2>
+              <p>Des parcours clairs, des ressources utiles et un espace conçu pour vous faire avancer.</p>
+            </div>
+            <div className="learning-preview" aria-hidden="true">
+              <div className="learning-preview__back-card"><span>✦</span><strong>Explorer</strong><small>De nouvelles idées</small></div>
+              <div className="learning-preview__front-card">
+                <span className="learning-preview__badge">OPEN CAMPUS</span>
+                <strong>Votre prochain chapitre commence ici.</strong>
+                <div className="learning-preview__progress"><span /></div>
+              </div>
+            </div>
+            <p className="auth-card__quote">Faites de la place pour votre prochaine idée.</p>
+          </aside>
           <div className="auth-card__form">
             <LoginForm onSubmit={handleLogin} />
           </div>
