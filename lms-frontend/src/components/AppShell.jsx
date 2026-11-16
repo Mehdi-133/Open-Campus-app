@@ -23,7 +23,7 @@ function NavigationIcon({ name }) {
   )
 }
 
-export function AppShell({ activeView, navigation, onNavigate, roleLabel, user, children }) {
+export function AppShell({ activeView, navigation, onLogout, onNavigate, roleLabel, user, children }) {
   const currentPage = navigation.find((item) => item.id === activeView) || navigation[0]
   const displayName = user.name || user.email
 
@@ -54,14 +54,17 @@ export function AppShell({ activeView, navigation, onNavigate, roleLabel, user, 
             <span className="app-header__context">{roleLabel} / Espace de travail</span>
             <h1>{currentPage.label}</h1>
           </div>
-          <div className="account-chip" role="group" aria-label={`Compte ${displayName} — ${roleLabel}`}>
-            <span className="account-chip__avatar" aria-hidden="true">
-              {displayName.slice(0, 1).toUpperCase()}
-            </span>
-            <span className="account-chip__identity">
-              <strong>{displayName}</strong>
-              <span>{roleLabel}</span>
-            </span>
+          <div className="account-actions">
+            <div className="account-chip" role="group" aria-label={`Compte ${displayName} — ${roleLabel}`}>
+              <span className="account-chip__avatar" aria-hidden="true">
+                {displayName.slice(0, 1).toUpperCase()}
+              </span>
+              <span className="account-chip__identity">
+                <strong>{displayName}</strong>
+                <span>{roleLabel}</span>
+              </span>
+            </div>
+            <button className="logout-button" onClick={onLogout} type="button">Se déconnecter</button>
           </div>
         </header>
         <main className="app-content">

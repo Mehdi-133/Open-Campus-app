@@ -1,4 +1,4 @@
-export function UnsupportedRoleNotice({ role }) {
+export function UnsupportedRoleNotice({ onLogout, role }) {
   const isTrainer = role === 'trainer'
 
   return (
@@ -13,6 +13,7 @@ export function UnsupportedRoleNotice({ role }) {
           ? 'Les outils formateur ne sont pas inclus dans cette version. Aucun écran ni privilège administrateur n’est accordé à un compte formateur.'
           : 'Cette application ne propose pas d’espace pour ce rôle.'}
       </p>
+      <button className="logout-button" onClick={onLogout} type="button">Se déconnecter</button>
     </main>
   )
 }

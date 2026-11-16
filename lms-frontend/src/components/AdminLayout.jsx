@@ -46,13 +46,14 @@ function AdminDashboard({ onNavigate }) {
   )
 }
 
-export function AdminLayout({ activeView, onNavigate, user }) {
+export function AdminLayout({ activeView, onLogout, onNavigate, user }) {
   const pageTitle = ADMIN_NAVIGATION.find((item) => item.id === activeView)?.label
 
   return (
     <AppShell
       activeView={activeView}
       navigation={ADMIN_NAVIGATION}
+      onLogout={onLogout}
       onNavigate={onNavigate}
       roleLabel="Admin"
       user={user}
