@@ -1,4 +1,5 @@
 import { AppShell } from './AppShell.jsx'
+import { UsersPage } from './UsersPage.jsx'
 import { ADMIN_NAVIGATION } from './navigation.js'
 
 function InformationPanel({ title, description }) {
@@ -46,7 +47,7 @@ function AdminDashboard({ onNavigate }) {
   )
 }
 
-export function AdminLayout({ activeView, onLogout, onNavigate, user }) {
+export function AdminLayout({ activeView, onLoadUsers, onLogout, onNavigate, user }) {
   const pageTitle = ADMIN_NAVIGATION.find((item) => item.id === activeView)?.label
 
   return (
@@ -60,16 +61,16 @@ export function AdminLayout({ activeView, onLogout, onNavigate, user }) {
     >
       {activeView === 'overview' ? (
         <AdminDashboard onNavigate={onNavigate} />
+      ) : activeView === 'users' ? (
+        <UsersPage onLoadUsers={onLoadUsers} />
       ) : (
         <>
           <div className="app-content__heading app-content__heading--section">
             <h2>{pageTitle}</h2>
           </div>
           <InformationPanel
-            title={activeView === 'users' ? 'Gestion des utilisateurs' : 'Catalogue des cours'}
-            description={activeView === 'users'
-              ? 'La liste sera reliée quand le contrat API d’administration sera disponible.'
-              : 'Le catalogue administrateur sera relié à un contrat qui expose les cours selon les autorisations confirmées.'}
+            title="Catalogue des cours"
+            description="Le catalogue administrateur sera relié à un contrat qui expose les cours selon les autorisations confirmées."
           />
         </>
       )}

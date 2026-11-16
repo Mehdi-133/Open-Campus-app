@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { getCurrentUser, login } from './api/auth.js'
+import { ApiError } from './api/client.js'
 import { BrandLogo } from './components/BrandLogo.jsx'
 import { AdminLayout } from './components/AdminLayout.jsx'
 import { LearnerLayout } from './components/LearnerLayout.jsx'
@@ -30,6 +31,20 @@ function App() {
       handleLogout()
     }
     throw error
+  }
+
+  // BLOQUANT OCF-13 : le backend n’expose aucune route de gestion des utilisateurs.
+  // Le contrat Admin (méthode, chemin, autorisation, enveloppe de réponse) doit être
+  // validé avant d’ajouter l’adaptateur dans src/api/. La liste reste donc explicitement
+  // indisponible : aucun compte, aucun succès ne peut être fabriqué côté client.
+  async function handleLoadUsers() {
+    if (!session?.token || session.user.role !== 'admin') {
+      throw new ApiError('Accès refusé.', 403)
+    }
+
+    throw new Error(
+      'La gestion des utilisateurs n’est pas encore disponible : le contrat API Admin doit être validé avant l’intégration.',
+    )
   }
 
   if (!session?.user) {
@@ -66,7 +81,7 @@ function App() {
       ? activeView
       : ADMIN_NAVIGATION[0].id
 
-    return <AdminLayout activeView={currentView} onLogout={handleLogout} onNavigate={setActiveView} user={session.user} />
+    return <AdminLayout activeView={currentView} onLoadUsers={handleLoadUsers} onLogout={handleLogout} onNavigate={setActiveView} user={session.user} />
   }
 
   if (session.user.role === 'learner') {
