@@ -7,7 +7,7 @@ const getCourses = async (req, res, next) => {
     const { category, level, keyword, sortBy } = req.query;
 
     const filter = {
-      status: "published",
+      status: "draft",
     };
 
     if (category) {

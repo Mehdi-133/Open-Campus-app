@@ -24,6 +24,14 @@ function App() {
     setActiveView('overview')
   }
 
+  // eslint-disable-next-line no-unused-vars
+  function handleProtectedError(error) {
+    if (error?.status === 401) {
+      handleLogout()
+    }
+    throw error
+  }
+
   if (!session?.user) {
     return (
       <main className="auth-page">
