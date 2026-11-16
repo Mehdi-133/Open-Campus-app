@@ -1,4 +1,5 @@
 import { AppShell } from './AppShell.jsx'
+import { LearnerProfilePage } from './LearnerProfilePage.jsx'
 import { LEARNER_NAVIGATION } from './navigation.js'
 
 function InformationPanel({ title, description }) {
@@ -55,16 +56,16 @@ export function LearnerLayout({ activeView, onLogout, onNavigate, user }) {
     >
       {activeView === 'overview' ? (
         <LearnerDashboard onNavigate={onNavigate} user={user} />
+      ) : activeView === 'profile' ? (
+        <LearnerProfilePage user={user} />
       ) : (
         <>
           <div className="app-content__heading app-content__heading--section">
             <h2>{pageTitle}</h2>
           </div>
           <InformationPanel
-            title={activeView === 'courses' ? 'Vos cours confirmés apparaîtront ici' : 'Votre profil confirmé'}
-            description={activeView === 'courses'
-              ? 'Cette vue sera reliée à vos inscriptions lorsque le chargement des cours sera ajouté.'
-              : 'Les informations de votre compte seront présentées ici une fois la session connectée.'}
+            title="Vos cours confirmés apparaîtront ici"
+            description="Cette vue sera reliée à vos inscriptions lorsque le chargement des cours sera ajouté."
           />
         </>
       )}
