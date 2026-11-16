@@ -1,14 +1,12 @@
 import { useState } from 'react'
+import { UserDetailsPanel } from './UserDetailsPanel.jsx'
+import { UserFilters } from './UserFilters.jsx'
 import { UserList } from './UserList.jsx'
 
 const IDLE = 'idle'
 const LOADING = 'loading'
 const SUCCESS = 'success'
 const ERROR = 'error'
-
-function countLabel(count) {
-  return count === 1 ? '1 compte' : `${count} comptes`
-}
 
 export function UsersLoading() {
   return (
@@ -44,9 +42,16 @@ export function UsersError({ message, onRetry }) {
 }
 
 export function UsersPage({ onLoadUsers }) {
+  // Server request state.
   const [status, setStatus] = useState(IDLE)
   const [users, setUsers] = useState([])
   const [error, setError] = useState('')
+
+  // Local UI state: filters and the selected row.
+  // They live here because both the list and the detail panel need them (lifting state).
+  const [roleFilter, setRoleFilter] = useState('all')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [selectedUserId, setSelectedUserId] = useState(null)
 
   async function loadUsers() {
     if (status === LOADING) {
@@ -55,6 +60,7 @@ export function UsersPage({ onLoadUsers }) {
 
     setStatus(LOADING)
     setError('')
+    setSelectedUserId(null)
 
     try {
       const nextUsers = await onLoadUsers()
@@ -67,7 +73,37 @@ export function UsersPage({ onLoadUsers }) {
     }
   }
 
+  // The filtered list is derived during render, never stored in state.
+  const filteredUsers = users.filter((user) => {
+    const matchesRole = roleFilter === 'all' || user.role === roleFilter
+    const matchesStatus = statusFilter === 'all' || user.status === statusFilter
+
+    return matchesRole && matchesStatus
+  })
+
+  const selectedUser = users.find((user) => user.id === selectedUserId) || null
   const hasUsers = status === SUCCESS && users.length > 0
+
+  function handleRoleChange(value) {
+    setRoleFilter(value)
+    setSelectedUserId(null)
+  }
+
+  function handleStatusChange(value) {
+    setStatusFilter(value)
+    setSelectedUserId(null)
+  }
+
+  function handleResetFilters() {
+    setRoleFilter('all')
+    setStatusFilter('all')
+    setSelectedUserId(null)
+  }
+
+  // Clicking the same row again closes its detail panel.
+  function handleSelectUser(userId) {
+    setSelectedUserId((currentId) => (currentId === userId ? null : userId))
+  }
 
   return (
     <section className="users-page" aria-label="Gestion des utilisateurs">
@@ -104,8 +140,36 @@ export function UsersPage({ onLoadUsers }) {
 
         {hasUsers ? (
           <>
-            <p className="users-page__count">{countLabel(users.length)}</p>
-            <UserList users={users} />
+            <UserFilters
+              onReset={handleResetFilters}
+              onRoleChange={handleRoleChange}
+              onStatusChange={handleStatusChange}
+              resultCount={filteredUsers.length}
+              role={roleFilter}
+              status={statusFilter}
+              totalCount={users.length}
+            />
+
+            {filteredUsers.length > 0 ? (
+              <div className="users-page__content">
+                <UserList
+                  onSelectUser={handleSelectUser}
+                  selectedId={selectedUserId}
+                  users={filteredUsers}
+                />
+                <UserDetailsPanel onClose={() => setSelectedUserId(null)} user={selectedUser} />
+              </div>
+            ) : (
+              <div className="users-page__state">
+                <div>
+                  <h3>Aucun compte ne correspond aux filtres</h3>
+                  <p>Modifiez le rôle ou le statut, ou réinitialisez les filtres.</p>
+                </div>
+                <button className="users-page__retry" onClick={handleResetFilters} type="button">
+                  Réinitialiser les filtres
+                </button>
+              </div>
+            )}
           </>
         ) : null}
       </div>

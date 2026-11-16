@@ -906,7 +906,7 @@
 
 .user-card {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
   align-items: center;
   gap: 16px;
   padding: 16px 18px;
@@ -999,6 +999,225 @@
   height: 6px;
   border-radius: 50%;
   background: currentColor;
+}
+
+/* Users filters and detail panel (OCF-14) */
+.users-page__content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  align-items: start;
+  gap: 16px;
+}
+
+.user-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 18px;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  background: var(--color-surface);
+}
+
+.user-filters__fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.user-filters__field {
+  display: grid;
+  gap: 6px;
+}
+
+.user-filters__field label {
+  color: var(--color-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+.user-filters__field select {
+  min-width: 190px;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid #dce0e6;
+  border-radius: 10px;
+  color: var(--color-ink);
+  background: var(--color-surface);
+  font: inherit;
+  font-size: 14px;
+}
+
+.user-filters__field select:focus {
+  border-color: var(--color-teal-dark);
+  outline: 0;
+  box-shadow: 0 0 0 3px #15aaa425;
+}
+
+.user-filters__summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-filters__count {
+  color: var(--color-muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+.user-filters__reset,
+.user-card__select {
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid #c9d5d8;
+  border-radius: 9px;
+  color: var(--color-teal-dark);
+  background: var(--color-surface);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.user-filters__reset:hover,
+.user-card__select:hover {
+  border-color: var(--color-teal-dark);
+  background: #e9f8f6;
+}
+
+.user-card.is-selected {
+  border-color: var(--color-teal-dark);
+  background: #f1fbfa;
+  box-shadow: 0 0 0 2px #15aaa41f;
+}
+
+.user-card__select[aria-pressed='true'] {
+  border-color: var(--color-teal-dark);
+  color: #fff;
+  background: var(--color-teal-dark);
+}
+
+.user-details {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  background: var(--color-surface);
+}
+
+.user-details--empty {
+  color: var(--color-muted);
+}
+
+.user-details--empty h3 {
+  color: var(--color-ink);
+  font-size: 15px;
+}
+
+.user-details--empty p {
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.user-details__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.user-details__header h3 {
+  font-size: 15px;
+}
+
+.user-details__close {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: 9px;
+  color: var(--color-muted);
+  background: var(--color-surface);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.user-details__close:hover {
+  border-color: #c9d5d8;
+  color: var(--color-ink);
+}
+
+.user-details__identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-details__avatar {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  flex: none;
+  border-radius: 50%;
+  color: #145c5b;
+  background: var(--color-mint);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.user-details__identity h4 {
+  font-size: 16px;
+  overflow-wrap: anywhere;
+}
+
+.user-details__identity p {
+  margin-top: 2px;
+  color: var(--color-muted);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.user-details__list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+
+.user-details__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-border);
+}
+
+.user-details__row dt {
+  color: var(--color-muted);
+  font-size: 12px;
+}
+
+.user-details__row dd {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.user-details__note {
+  color: var(--color-muted);
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 @media (max-width: 760px) {
@@ -1101,6 +1320,15 @@
   .user-card__meta {
     grid-column: 1 / -1;
     padding-left: 56px;
+  }
+
+  .user-card__select {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+
+  .users-page__content {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -1241,6 +1469,16 @@
   .user-card__meta {
     padding-left: 0;
     gap: 18px;
+  }
+
+  .user-filters__fields,
+  .user-filters__field {
+    width: 100%;
+  }
+
+  .user-filters__field select {
+    width: 100%;
+    min-width: 0;
   }
 }
 

@@ -1,42 +1,25 @@
-const ROLE_LABELS = {
-  admin: 'Administrateur',
-  trainer: 'Formateur',
-  learner: 'Apprenant',
-}
-
-const STATUS_LABELS = {
-  active: 'Actif',
-  suspended: 'Suspendu',
-}
+import { initialFor, labelFor, ROLE_LABELS, STATUS_LABELS } from './userLabels.js'
 
 const STATUS_TONES = {
   active: 'active',
   suspended: 'suspended',
 }
 
-function labelFor(labels, value) {
-  return labels[value] || value || 'Non renseigné'
-}
-
-function initialFor(user) {
-  const source = user.name?.trim() || user.email?.trim() || '?'
-
-  return source.slice(0, 1).toUpperCase()
-}
-
-export function UserList({ users }) {
+export function UserList({ onSelectUser, selectedId, users }) {
   return (
     <ul className="user-list">
       {users.map((user) => {
         const roleLabel = labelFor(ROLE_LABELS, user.role)
         const statusLabel = labelFor(STATUS_LABELS, user.status)
         const statusTone = STATUS_TONES[user.status] || 'neutral'
+        const isSelected = user.id === selectedId
+        const displayName = user.name?.trim() || user.email || 'Compte sans nom'
 
         return (
-          <li className="user-card" key={user.id}>
+          <li className={`user-card${isSelected ? ' is-selected' : ''}`} key={user.id}>
             <span className="user-card__avatar" aria-hidden="true">{initialFor(user)}</span>
             <div className="user-card__identity">
-              <h4>{user.name?.trim() || user.email || 'Compte sans nom'}</h4>
+              <h4>{displayName}</h4>
               <p>{user.email || 'Adresse e-mail non renseignée'}</p>
             </div>
             <div className="user-card__meta">
@@ -52,6 +35,15 @@ export function UserList({ users }) {
                 </span>
               </div>
             </div>
+            <button
+              aria-label={`${isSelected ? 'Masquer' : 'Afficher'} la fiche de ${displayName}`}
+              aria-pressed={isSelected}
+              className="user-card__select"
+              onClick={() => onSelectUser(user.id)}
+              type="button"
+            >
+              {isSelected ? 'Fiche affichée' : 'Voir la fiche'}
+            </button>
           </li>
         )
       })}
