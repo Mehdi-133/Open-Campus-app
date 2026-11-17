@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { getAdminUsers } from './api/adminUsers.js'
 import { getCurrentUser, login } from './api/auth.js'
+import { getMyEnrollments } from './api/enrollments.js'
 import { ApiError } from './api/client.js'
 import { BrandLogo } from './components/BrandLogo.jsx'
 import { AdminLayout } from './components/AdminLayout.jsx'
@@ -32,6 +33,24 @@ function App() {
       handleLogout()
     }
     throw error
+  }
+
+  // A 401 on an established session purges it and returns to the login screen.
+  // A 403 keeps the session and is rendered as "Accès refusé" by the calling view.
+  async function handleLoadEnrollments() {
+    if (!session?.token) {
+      throw new ApiError('Session expirée. Reconnectez-vous.', 401)
+    }
+
+    try {
+      return await getMyEnrollments(session.token)
+    } catch (error) {
+      if (error?.status === 401) {
+        handleLogout()
+      }
+
+      throw error
+    }
   }
 
   // The admin guard stays client-side for rendering only; the server also enforces it.
@@ -94,7 +113,7 @@ function App() {
       ? activeView
       : LEARNER_NAVIGATION[0].id
 
-    return <LearnerLayout activeView={currentView} onLogout={handleLogout} onNavigate={setActiveView} user={session.user} />
+    return <LearnerLayout activeView={currentView} onLoadEnrollments={handleLoadEnrollments} onLogout={handleLogout} onNavigate={setActiveView} user={session.user} />
   }
 
   return <UnsupportedRoleNotice onLogout={handleLogout} role={session.user.role} />
