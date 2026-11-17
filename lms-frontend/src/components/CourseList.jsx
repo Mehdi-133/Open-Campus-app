@@ -2,7 +2,7 @@ import { COURSE_STATUS_LABELS, LEVEL_LABELS, labelFor } from './courseLabels.js'
 
 export function CourseList({ courses }) {
   return (
-    <ul className="course-inventory">
+    <ul className="course-inventory" id="course-inventory">
       {courses.map((course) => (
         <li className="course-inventory__card" key={course.id}>
           <div className="course-inventory__heading">

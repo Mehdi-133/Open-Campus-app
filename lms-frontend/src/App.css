@@ -2299,10 +2299,10 @@
   line-height: 1.55;
 }
 
-.courses-page__filters {
+.course-filters {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: end;
   justify-content: space-between;
   gap: 16px;
   padding: 16px 18px;
@@ -2311,14 +2311,61 @@
   background: var(--color-surface);
 }
 
-.courses-page__filter-list {
+.course-filters__fields {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 14px;
 }
 
-.courses-page__filter {
-  min-height: 38px;
+.course-filters__field {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.course-filters__field label {
+  color: var(--color-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+.course-filters__field select {
+  min-width: 190px;
+  min-height: 44px;
+  max-width: 100%;
+  padding: 0 12px;
+  border: 1px solid #dce0e6;
+  border-radius: 10px;
+  color: var(--color-ink);
+  background: var(--color-surface);
+  font: inherit;
+  font-size: 14px;
+}
+
+.course-filters__field select:focus-visible {
+  border-color: var(--color-teal-dark);
+  outline: 3px solid #087f7a;
+  outline-offset: 2px;
+}
+
+.course-filters__summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.course-filters__count {
+  color: var(--color-muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+.course-filters__reset {
+  min-height: 44px;
   padding: 0 14px;
   border: 1px solid #c9d5d8;
   border-radius: 9px;
@@ -2331,22 +2378,9 @@
   cursor: pointer;
 }
 
-.courses-page__filter:hover {
+.course-filters__reset:hover {
   border-color: var(--color-teal-dark);
   background: #e9f8f6;
-}
-
-.courses-page__filter[aria-pressed='true'] {
-  border-color: var(--color-teal-dark);
-  color: #fff;
-  background: var(--color-teal-dark);
-}
-
-.courses-page__count {
-  color: var(--color-muted);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.2px;
 }
 
 .course-inventory {
@@ -2432,8 +2466,18 @@
 
 @media (max-width: 500px) {
   .courses-page__toolbar,
-  .courses-page__filters {
+  .course-filters {
     padding: 18px;
+  }
+
+  .course-filters__fields,
+  .course-filters__field {
+    width: 100%;
+  }
+
+  .course-filters__field select {
+    width: 100%;
+    min-width: 0;
   }
 
   .course-inventory__card {
