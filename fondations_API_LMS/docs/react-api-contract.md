@@ -48,6 +48,7 @@ reference, including fields and endpoint-specific errors.
 | Read trainer statistics | `GET /api/trainer/stats` | Trainer only; cached snapshot, with explicit no-data state. See card 4.7. |
 | List platform accounts (Admin) | `GET /api/admin/users` | Admin token only; learners and trainers receive 403. See card 4.9 (added 2026-11-17). |
 | Create a platform account (Admin) | `POST /api/admin/users` | Admin token only; strict `name`/`email`/`password` body, optional `role`/`status` defaulting to `learner`/`active`. See card 4.10 (added 2026-11-17). |
+| List every stored course (Admin) | `GET /api/admin/courses` | Admin token only; complete inventory across `draft`, `published` and `archived`, summarized as `id`/`title`/`category`/`level`/`status`. See card 4.11 (added 2026-11-17). |
 
 These are the selected journeys for this draft. Detailed trainer content CRUD
 and additional screens remain in OpenAPI until the team agrees their contract scope.
@@ -629,6 +630,61 @@ cleared by it. Unexpected failures return 500. This card was added on
 2026-11-17 with the mounted route and is replayed against MongoDB by
 `tests/adminUsers.test.js` (9 tests, including creation); it is not a claim
 about the separately running Docker API image.
+
+### 4.11 List every stored course (Admin)
+
+| Request | Value |
+| --- | --- |
+| Operation | `GET /api/admin/courses` |
+| Access | Admin token only. Learners and trainers receive 403 with no course data; a missing or invalid token receives 401. |
+| Headers | Bearer token; no body |
+| Query parameters | None. There is no pagination or server-side filter; the React screen derives its own view from the complete list. |
+| Success | HTTP 200 with `{ count, data }` |
+
+```json
+{
+  "count": 2,
+  "data": [
+    {
+      "id": "507f1f77bcf86cd799439013",
+      "title": "Node.js foundations",
+      "category": "Development",
+      "level": "beginner",
+      "status": "published"
+    },
+    {
+      "id": "507f1f77bcf86cd799439014",
+      "title": "API design essentials",
+      "category": "Development",
+      "level": "intermediate",
+      "status": "draft"
+    }
+  ]
+}
+```
+
+| Response field | Type | Presence / meaning |
+| --- | --- | --- |
+| `count` | integer | Required; number of returned courses, equal to `data.length`. |
+| `data` | object[] | Required; an empty database returns `[]` with `count: 0`. |
+| Course `id` | string | Required 24-character hexadecimal record ID; the model `_id` is serialized as `id`. |
+| Course `title`, `category` | string | Required stored values. |
+| Course `level` | string enum | Required: `beginner`, `intermediate`, `advanced`. |
+| Course `status` | string enum | Required: `draft`, `published`, `archived`. All three states are returned. |
+
+The controller selects only `title category level status`, so the trainer
+reference, description, objectives, durations, publication timestamp and
+timestamps are never returned. Results are sorted by `title`, then `_id` as a
+stable tiebreaker. This is deliberately distinct from the public
+`GET /api/courses` catalogue, which is not an Admin inventory and whose source
+currently filters a single status.
+
+Errors: 401 missing/invalid/expired token, 403 non-admin role, 500 unexpected
+failure. A 403 refuses that action; an established session is not cleared by
+it. There is no 404 case for this operation. Added on 2026-11-17 with the
+mounted route, the `AdminCourse` Swagger schema and `tests/adminCourses.test.js`.
+Verified by the full Jest suite and a live HTTP replay against the running API
+with temporary draft/published/archived fixtures, which were removed afterward.
 
 ### Endpoint-card standard for the remaining operations
 

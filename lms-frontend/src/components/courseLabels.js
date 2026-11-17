@@ -1,4 +1,10 @@
 // Shared French labels for course levels and enrollment statuses.
+export const COURSE_STATUS_LABELS = {
+  draft: 'Brouillon',
+  published: 'Publié',
+  archived: 'Archivé',
+}
+
 export const LEVEL_LABELS = {
   beginner: 'Débutant',
   intermediate: 'Intermédiaire',

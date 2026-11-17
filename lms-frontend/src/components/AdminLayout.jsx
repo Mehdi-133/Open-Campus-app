@@ -1,15 +1,7 @@
 import { AppShell } from './AppShell.jsx'
+import { CoursesPage } from './CoursesPage.jsx'
 import { UsersPage } from './UsersPage.jsx'
 import { ADMIN_NAVIGATION } from './navigation.js'
-
-function InformationPanel({ title, description }) {
-  return (
-    <section className="information-panel" aria-live="polite">
-      <span className="information-panel__icon" aria-hidden="true">i</span>
-      <div><h3>{title}</h3><p>{description}</p></div>
-    </section>
-  )
-}
 
 function AdminDashboard({ onNavigate }) {
   return (
@@ -47,9 +39,7 @@ function AdminDashboard({ onNavigate }) {
   )
 }
 
-export function AdminLayout({ activeView, onCreateUser, onLoadUsers, onLogout, onNavigate, user }) {
-  const pageTitle = ADMIN_NAVIGATION.find((item) => item.id === activeView)?.label
-
+export function AdminLayout({ activeView, onCreateUser, onLoadCourses, onLoadUsers, onLogout, onNavigate, user }) {
   return (
     <AppShell
       activeView={activeView}
@@ -64,15 +54,7 @@ export function AdminLayout({ activeView, onCreateUser, onLoadUsers, onLogout, o
       ) : activeView === 'users' ? (
         <UsersPage onCreateUser={onCreateUser} onLoadUsers={onLoadUsers} />
       ) : (
-        <>
-          <div className="app-content__heading app-content__heading--section">
-            <h2>{pageTitle}</h2>
-          </div>
-          <InformationPanel
-            title="Catalogue des cours"
-            description="Le catalogue administrateur sera relié à un contrat qui expose les cours selon les autorisations confirmées."
-          />
-        </>
+        <CoursesPage onLoadCourses={onLoadCourses} />
       )}
     </AppShell>
   )
