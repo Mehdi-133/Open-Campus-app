@@ -39,7 +39,7 @@ function AdminDashboard({ onNavigate }) {
   )
 }
 
-export function AdminLayout({ activeView, onCreateUser, onLoadCourses, onLoadUsers, onLogout, onNavigate, user }) {
+export function AdminLayout({ activeView, onCreateUser, onLoadCourses, onLoadUsers, onLogout, onNavigate, onUpdateUser, user }) {
   return (
     <AppShell
       activeView={activeView}
@@ -52,7 +52,7 @@ export function AdminLayout({ activeView, onCreateUser, onLoadCourses, onLoadUse
       {activeView === 'overview' ? (
         <AdminDashboard onNavigate={onNavigate} />
       ) : activeView === 'users' ? (
-        <UsersPage onCreateUser={onCreateUser} onLoadUsers={onLoadUsers} />
+        <UsersPage onCreateUser={onCreateUser} onLoadUsers={onLoadUsers} onUpdateUser={onUpdateUser} />
       ) : (
         <CoursesPage onLoadCourses={onLoadCourses} />
       )}

@@ -1327,6 +1327,17 @@
   background: var(--color-surface);
 }
 
+/* User edit form (OCF-48) keeps the same layout with a lilac accent. */
+.user-form-card--edit {
+  border-color: #d9cff0;
+  background: linear-gradient(180deg, #faf8ff 0, var(--color-surface) 160px);
+}
+
+.user-form-card--edit .user-form-card__notice {
+  color: #5a4386;
+  background: #f1ebfb;
+}
+
 .user-form-card__intro h3 {
   margin-top: 6px;
   font-size: 19px;
@@ -1360,9 +1371,31 @@
   font-size: 13px;
 }
 
-.user-form .form-field input {
+.user-form .form-field input,
+.user-form .form-field select {
+  width: 100%;
   min-height: 46px;
+  border: 1px solid #dce0e6;
+  border-radius: 11px;
+  color: var(--color-ink);
+  background: var(--color-surface);
+  font: inherit;
   font-size: 13px;
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.user-form .form-field select {
+  padding: 0 12px;
+}
+
+.user-form .form-field select:focus {
+  border-color: var(--color-teal-dark);
+  outline: 0;
+  box-shadow: 0 0 0 3px #15aaa425;
+}
+
+.user-form .form-field select[aria-invalid='true'] {
+  border-color: #b1283d;
 }
 
 .user-form .form-field__input-wrap:has(.password-toggle) input {
@@ -1423,6 +1456,23 @@
 .user-form__cancel:hover {
   border-color: var(--color-teal-dark);
   background: #e9f8f6;
+}
+
+.user-form__reset {
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid #d8cef0;
+  border-radius: 10px;
+  color: #5a4386;
+  background: #f3eefc;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.user-form__reset:hover {
+  border-color: #5a4386;
+  background: #eae2fa;
 }
 
 .users-page__result {
@@ -1497,6 +1547,17 @@
   color: #36554d;
   font-size: 13px;
   line-height: 1.55;
+}
+
+.users-page__notice-detail {
+  margin-top: 6px;
+  color: #137c78;
+  font-weight: 600;
+}
+
+.users-page__notice-error {
+  margin-top: 6px;
+  color: #a32336;
 }
 
 .users-page__retry {
@@ -1853,6 +1914,31 @@
   color: var(--color-muted);
   font-size: 12px;
   line-height: 1.5;
+}
+
+.user-details__actions {
+  display: flex;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.user-details__edit {
+  flex: 1;
+  min-height: 42px;
+  padding: 0 14px;
+  border: 1px solid var(--color-teal-dark);
+  border-radius: 10px;
+  color: var(--color-teal-dark);
+  background: var(--color-surface);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.user-details__edit:hover {
+  color: #fff;
+  background: var(--color-teal-dark);
 }
 
 @media (max-width: 760px) {
