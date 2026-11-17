@@ -77,6 +77,45 @@ module.exports = {
     ],
     "additionalProperties": false
   },
+  "AdminCourse": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "pattern": "^[a-fA-F0-9]{24}$"
+      },
+      "title": {
+        "type": "string"
+      },
+      "category": {
+        "type": "string"
+      },
+      "level": {
+        "type": "string",
+        "enum": [
+          "beginner",
+          "intermediate",
+          "advanced"
+        ]
+      },
+      "status": {
+        "type": "string",
+        "enum": [
+          "draft",
+          "published",
+          "archived"
+        ]
+      }
+    },
+    "required": [
+      "id",
+      "title",
+      "category",
+      "level",
+      "status"
+    ],
+    "additionalProperties": false
+  },
   "MessageError": {
     "type": "object",
     "properties": {

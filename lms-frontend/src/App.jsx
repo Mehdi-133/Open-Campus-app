@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { getAdminCourses } from './api/adminCourses.js'
 import { createAdminUser, getAdminUsers, updateAdminUser } from './api/adminUsers.js'
 import { getCurrentUser, login } from './api/auth.js'
 import { getMyEnrollments } from './api/enrollments.js'
@@ -62,6 +63,24 @@ function App() {
 
     try {
       return await getAdminUsers(session.token)
+    } catch (error) {
+      if (error?.status === 401) {
+        handleLogout()
+      }
+
+      throw error
+    }
+  }
+
+  // The Admin catalogue is loaded only from the page's explicit button. A 401
+  // purges the session; a 403 preserves it and is rendered as "Accès refusé".
+  async function handleLoadCourses() {
+    if (!session?.token || session.user.role !== 'admin') {
+      throw new ApiError('Accès refusé.', 403)
+    }
+
+    try {
+      return await getAdminCourses(session.token)
     } catch (error) {
       if (error?.status === 401) {
         handleLogout()
@@ -141,7 +160,7 @@ function App() {
       ? activeView
       : ADMIN_NAVIGATION[0].id
 
-    return <AdminLayout activeView={currentView} onCreateUser={handleCreateUser} onLoadUsers={handleLoadUsers} onLogout={handleLogout} onNavigate={setActiveView} onUpdateUser={handleUpdateUser} user={session.user} />
+    return <AdminLayout activeView={currentView} onCreateUser={handleCreateUser} onLoadCourses={handleLoadCourses} onLoadUsers={handleLoadUsers} onLogout={handleLogout} onNavigate={setActiveView} onUpdateUser={handleUpdateUser} user={session.user} />
   }
 
   if (session.user.role === 'learner') {
