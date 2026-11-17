@@ -46,6 +46,7 @@ reference, including fields and endpoint-specific errors.
 | Read quizzes and submit/view attempts | `GET /api/quizzes/{quizId}`, `POST /api/quizzes/{quizId}/attempts`, `GET /api/quizzes/{quizId}/attempts` | Read/submit: learner only. Attempt history also permits the course-owner trainer. Submission has fewer prerequisite checks than reading. See card 4.5. |
 | Create, read and update feedback | `POST /api/feedback`, `GET /api/feedback/{feedbackId}`, `PATCH /api/feedback/{feedbackId}` | Create: course-owner trainer. Read: recipient, current owner or admin. Update: current owner or admin. See card 4.6. |
 | Read trainer statistics | `GET /api/trainer/stats` | Trainer only; cached snapshot, with explicit no-data state. See card 4.7. |
+| List platform accounts (Admin) | `GET /api/admin/users` | Admin token only; learners and trainers receive 403. See card 4.9 (added 2026-11-17). |
 
 These are the selected journeys for this draft. Detailed trainer content CRUD
 and additional screens remain in OpenAPI until the team agrees their contract scope.
@@ -63,9 +64,10 @@ and additional screens remain in OpenAPI until the team agrees their contract sc
 | Show trainer statistics and preferences | `GET /api/trainer/stats`, `GET /api/trainer/summary-preferences`, `PATCH /api/trainer/summary-preferences` | Trainer only. Statistics are cached; check `dataAvailable` and `refreshedAt`. Reading preferences may create defaults. |
 
 Admin notification settings and manual job controls are documented in Swagger
-but are outside this first learning/trainer screen scope. A dedicated admin
-screen contract requires a team decision. Their existing response differences
-are still recorded below so they are not mistaken for standard `data` responses.
+but are outside this first learning/trainer screen scope. The account list is
+now defined in card 4.9; other dedicated admin screens still require a team
+decision. Existing response differences are still recorded below so they are
+not mistaken for standard `data` responses.
 
 ## 2. Connection and authentication
 
@@ -536,6 +538,51 @@ Evidence: source-checked against `controllers/courseProgressController.js`,
 against the seeded demo account. Existing progression tests provide separate
 behavior evidence; this card does not claim a fresh seed or HTTP replay.
 
+### 4.9 List platform accounts (Admin)
+
+| Request | Value |
+| --- | --- |
+| Operation | `GET /api/admin/users` |
+| Access | Admin token only. Learners and trainers receive 403; a missing or invalid token receives 401. |
+| Headers | Bearer token; no body |
+| Query parameters | None. There is no pagination or server-side filter; the React screen filters the returned list locally. |
+| Success | HTTP 200 with `{ count, data }` |
+
+```json
+{
+  "count": 1,
+  "data": [
+    {
+      "id": "507f1f77bcf86cd799439012",
+      "name": "learner.demo",
+      "email": "learner.demo@lms.local",
+      "role": "learner",
+      "status": "active"
+    }
+  ]
+}
+```
+
+| Response field | Type | Presence / meaning |
+| --- | --- | --- |
+| `count` | integer | Required; number of returned accounts, equal to `data.length`. |
+| `data` | object[] | Required; an empty platform returns `[]` with `count: 0`. |
+| Account `id` | string | Required 24-character hexadecimal record ID; the model `_id` is serialized as `id`, matching auth responses. |
+| Account `name`, `email` | string | Required account fields. |
+| Account `role` | string enum | Required: `learner`, `trainer`, `admin`. |
+| Account `status` | string enum | Required: `active`, `suspended`. |
+
+The controller selects only `name email role status`. The password hash and
+other model fields are never selected or returned, and suspended accounts are
+included so the UI can show their real status. Accounts are sorted newest
+first by creation time, with `_id` as a stable tiebreaker.
+
+Errors: 401 missing/invalid/expired token, 403 non-admin role, 500 unexpected
+failure. A 403 refuses that action; an established session is not cleared by
+it. There is no 404 case for this operation. This card was added on 2026-11-17
+with the mounted route and is source-checked, not replayed against a running
+service in that checkpoint.
+
 ### Endpoint-card standard for the remaining operations
 
 For every additional screen, record the method/path, path/query/header fields,
@@ -643,7 +690,7 @@ The examples here do not claim that collection has been delivered or run.
 | Enrollment policy | Current enrollment creation accepts any authenticated role. Confirm whether product requirements want learner-only access; document current behavior until changed. |
 | Content ownership | Resource listing is public; some trainer content mutations lack owner checks. Confirm desired policy separately rather than promising stronger protection to React. |
 | Quiz prerequisites | Submission and attempt history do not enforce all quiz-read conditions. Keep this difference visible until the backend team resolves it. |
-| Missing journeys | No mounted enrollment cancellation, private-file download, user/role administration, token refresh or password reset endpoint. Do not build a contract around guessed URLs. |
+| Missing journeys | No mounted enrollment cancellation, private-file download, user/role creation or update, token refresh or password reset endpoint. `GET /api/admin/users` lists accounts (card 4.9) but does not create or edit them. Do not build a contract around guessed URLs. |
 | Quiz discovery | Learner quiz reading needs a `quizId`; agree how each screen obtains it from the available payloads/demo data. No quiz-by-module lookup route is mounted. |
 | Seed and examples | Seed account names and representative examples are documented above; actual environment IDs and replay evidence remain to be recorded under FAL-189. |
 | Feedback discovery | Create returns the new feedback ID; there is no mounted learner/course feedback listing endpoint. Agree how the learner screen obtains existing IDs. |
@@ -681,6 +728,12 @@ invent a version header. Proposed change handling for team agreement:
 | Request replay matches contract | Pending recorded environment-specific execution. Existing feature tests are separate evidence. |
 | Backend/frontend agreement and review | Pending. |
 | Contract committed, reviewed and merged to team main | Pending for this document revision. |
+
+Admin account list addition — 17 November 2026: the mounted `GET /api/admin/users`
+operation, its Swagger card and shared `AdminUser` schema were added with card 4.9.
+This is a source-checked contract; a replay against a running API and MongoDB has
+not been recorded in this checkpoint. The earlier rev 0.4 checks below remain
+dated evidence of that revision, not a new full-suite run.
 
 Checks performed for revision 0.4 on 29 October 2026:
 

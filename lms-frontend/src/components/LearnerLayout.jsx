@@ -1,4 +1,7 @@
+import { useState } from 'react'
 import { AppShell } from './AppShell.jsx'
+import { LearnerDashboard } from './LearnerDashboard.jsx'
+import { LearnerProfilePage } from './LearnerProfilePage.jsx'
 import { LEARNER_NAVIGATION } from './navigation.js'
 
 function InformationPanel({ title, description }) {
@@ -10,39 +13,33 @@ function InformationPanel({ title, description }) {
   )
 }
 
-function LearnerDashboard({ onNavigate, user }) {
-  const firstName = user.name?.trim().split(/\s+/)[0]
+export function LearnerLayout({ activeView, onLoadEnrollments, onLogout, onNavigate, user }) {
+  // Enrollment request state lives here: the dashboard and the future "Mes cours"
+  // view both read the same list, so the closest common parent owns it.
+  const [coursesStatus, setCoursesStatus] = useState('idle')
+  const [enrollments, setEnrollments] = useState([])
+  const [coursesError, setCoursesError] = useState('')
 
-  return (
-    <section className="dashboard-grid" aria-label="Espace apprenant">
-      <article className="dashboard-hero">
-        <p className="dashboard-hero__eyebrow">VOTRE PARCOURS OPEN CAMPUS</p>
-        <h3>{firstName ? `Bonjour ${firstName}, prêt à poursuivre votre apprentissage ?` : 'Prêt à poursuivre votre apprentissage ?'}</h3>
-        <p>Vos cours et votre progression apparaîtront ici à partir des informations de votre compte.</p>
-      </article>
-      <aside className="dashboard-side-card dashboard-side-card--learner">
-        <span className="dashboard-side-card__icon" aria-hidden="true">✦</span>
-        <h3>Un pas à la fois</h3>
-        <p>Retrouvez vos cours dès que vos inscriptions sont disponibles.</p>
-      </aside>
-      <section className="dashboard-section">
-        <div className="dashboard-section__heading">
-          <div><p className="eyebrow">VOTRE APPRENTISSAGE</p><h3>Mes cours</h3></div>
-          <button className="section-link" type="button" onClick={() => onNavigate('courses')}>
-            Voir mes cours <span aria-hidden="true">→</span>
-          </button>
-        </div>
-        <div className="empty-course-card">
-          <span className="empty-course-card__icon" aria-hidden="true">▤</span>
-          <div><h4>Vos cours apparaîtront ici</h4><p>Les cours seront affichés à partir de vos inscriptions confirmées.</p></div>
-        </div>
-      </section>
-    </section>
-  )
-}
-
-export function LearnerLayout({ activeView, onLogout, onNavigate, user }) {
   const pageTitle = LEARNER_NAVIGATION.find((item) => item.id === activeView)?.label
+
+  async function loadCourses() {
+    if (coursesStatus === 'loading') {
+      return
+    }
+
+    setCoursesStatus('loading')
+    setCoursesError('')
+
+    try {
+      const nextEnrollments = await onLoadEnrollments()
+      setEnrollments(Array.isArray(nextEnrollments) ? nextEnrollments : [])
+      setCoursesStatus('success')
+    } catch (requestError) {
+      setEnrollments([])
+      setCoursesError(requestError?.message || 'La demande a échoué. Réessayez.')
+      setCoursesStatus(requestError?.status === 403 ? 'forbidden' : 'error')
+    }
+  }
 
   return (
     <AppShell
@@ -54,17 +51,24 @@ export function LearnerLayout({ activeView, onLogout, onNavigate, user }) {
       user={user}
     >
       {activeView === 'overview' ? (
-        <LearnerDashboard onNavigate={onNavigate} user={user} />
+        <LearnerDashboard
+          coursesError={coursesError}
+          coursesStatus={coursesStatus}
+          enrollments={enrollments}
+          onLoadCourses={loadCourses}
+          onNavigate={onNavigate}
+          user={user}
+        />
+      ) : activeView === 'profile' ? (
+        <LearnerProfilePage user={user} />
       ) : (
         <>
           <div className="app-content__heading app-content__heading--section">
             <h2>{pageTitle}</h2>
           </div>
           <InformationPanel
-            title={activeView === 'courses' ? 'Vos cours confirmés apparaîtront ici' : 'Votre profil confirmé'}
-            description={activeView === 'courses'
-              ? 'Cette vue sera reliée à vos inscriptions lorsque le chargement des cours sera ajouté.'
-              : 'Les informations de votre compte seront présentées ici une fois la session connectée.'}
+            title="Vos cours confirmés apparaîtront ici"
+            description="Cette vue présentera vos inscriptions et leur progression à partir de la liste chargée depuis l’accueil."
           />
         </>
       )}

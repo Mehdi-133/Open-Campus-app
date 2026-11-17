@@ -39,6 +39,44 @@ module.exports = {
       "message"
     ]
   },
+  "AdminUser": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "pattern": "^[a-fA-F0-9]{24}$"
+      },
+      "name": {
+        "type": "string"
+      },
+      "email": {
+        "type": "string"
+      },
+      "role": {
+        "type": "string",
+        "enum": [
+          "learner",
+          "trainer",
+          "admin"
+        ]
+      },
+      "status": {
+        "type": "string",
+        "enum": [
+          "active",
+          "suspended"
+        ]
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "email",
+      "role",
+      "status"
+    ],
+    "additionalProperties": false
+  },
   "MessageError": {
     "type": "object",
     "properties": {
