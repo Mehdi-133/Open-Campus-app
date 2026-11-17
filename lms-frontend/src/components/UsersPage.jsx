@@ -7,6 +7,7 @@ const IDLE = 'idle'
 const LOADING = 'loading'
 const SUCCESS = 'success'
 const ERROR = 'error'
+const FORBIDDEN = 'forbidden'
 
 export function UsersLoading() {
   return (
@@ -41,6 +42,17 @@ export function UsersError({ message, onRetry }) {
   )
 }
 
+export function UsersForbidden() {
+  return (
+    <div className="users-page__state users-page__state--error" role="alert">
+      <div>
+        <h3>Accès refusé</h3>
+        <p>Le serveur a refusé cette demande. Votre session reste active.</p>
+      </div>
+    </div>
+  )
+}
+
 export function UsersPage({ onLoadUsers }) {
   // Server request state.
   const [status, setStatus] = useState(IDLE)
@@ -69,7 +81,7 @@ export function UsersPage({ onLoadUsers }) {
     } catch (requestError) {
       setUsers([])
       setError(requestError?.message || 'La demande a échoué. Réessayez.')
-      setStatus(ERROR)
+      setStatus(requestError?.status === 403 ? FORBIDDEN : ERROR)
     }
   }
 
@@ -135,6 +147,8 @@ export function UsersPage({ onLoadUsers }) {
         {status === LOADING ? <UsersLoading /> : null}
 
         {status === ERROR ? <UsersError message={error} onRetry={loadUsers} /> : null}
+
+        {status === FORBIDDEN ? <UsersForbidden /> : null}
 
         {status === SUCCESS && users.length === 0 ? <UsersEmpty /> : null}
 

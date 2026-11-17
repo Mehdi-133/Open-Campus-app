@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { getAdminUsers } from './api/adminUsers.js'
 import { getCurrentUser, login } from './api/auth.js'
 import { ApiError } from './api/client.js'
 import { BrandLogo } from './components/BrandLogo.jsx'
@@ -33,18 +34,22 @@ function App() {
     throw error
   }
 
-  // BLOQUANT OCF-13 : le backend n’expose aucune route de gestion des utilisateurs.
-  // Le contrat Admin (méthode, chemin, autorisation, enveloppe de réponse) doit être
-  // validé avant d’ajouter l’adaptateur dans src/api/. La liste reste donc explicitement
-  // indisponible : aucun compte, aucun succès ne peut être fabriqué côté client.
+  // The admin guard stays client-side for rendering only; the server also enforces it.
+  // A 401 purges the session; a 403 preserves it and is rendered as "Accès refusé".
   async function handleLoadUsers() {
     if (!session?.token || session.user.role !== 'admin') {
       throw new ApiError('Accès refusé.', 403)
     }
 
-    throw new Error(
-      'La gestion des utilisateurs n’est pas encore disponible : le contrat API Admin doit être validé avant l’intégration.',
-    )
+    try {
+      return await getAdminUsers(session.token)
+    } catch (error) {
+      if (error?.status === 401) {
+        handleLogout()
+      }
+
+      throw error
+    }
   }
 
   if (!session?.user) {
