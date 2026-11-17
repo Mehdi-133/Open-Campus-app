@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { getAdminUsers } from './api/adminUsers.js'
+import { createAdminUser, getAdminUsers } from './api/adminUsers.js'
 import { getCurrentUser, login } from './api/auth.js'
 import { getMyEnrollments } from './api/enrollments.js'
 import { ApiError } from './api/client.js'
@@ -71,17 +71,22 @@ function App() {
     }
   }
 
-  // OCF-45: creation is a callback-only form. No Admin creation route is mounted,
-  // so this rejects explicitly instead of calling /register or a guessed URL.
-  // OCF-46 can replace this stub once the server contract is validated.
-  async function handleCreateUser() {
+  // Account creation is an explicit submit event: the shared API layer owns the
+  // POST. A 401 purges the session; a 403 preserves it and is shown as "Accès refusé".
+  async function handleCreateUser(values) {
     if (!session?.token || session.user.role !== 'admin') {
       throw new ApiError('Accès refusé.', 403)
     }
 
-    throw new ApiError(
-      'La création de compte Admin n’est pas disponible : le contrat serveur n’est pas validé. Votre saisie a été conservée.',
-    )
+    try {
+      return await createAdminUser(session.token, values)
+    } catch (error) {
+      if (error?.status === 401) {
+        handleLogout()
+      }
+
+      throw error
+    }
   }
 
   if (!session?.user) {

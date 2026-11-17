@@ -181,8 +181,8 @@ export function UsersPage({ onCreateUser, onLoadUsers }) {
             <p className="eyebrow">CRÉATION D’UN COMPTE</p>
             <h3 id="user-form-title">Nouvel utilisateur</h3>
             <p className="user-form-card__notice">
-              Le contrat de création Admin n’est pas validé : ce formulaire prépare la saisie et
-              n’envoie aucune requête. Aucun compte ne sera ajouté à la liste.
+              Le compte est créé seulement après réponse du serveur. En cas de refus, votre saisie
+              est conservée et le champ concerné est signalé.
             </p>
           </div>
           <UserForm onCancel={() => setIsFormOpen(false)} onSubmit={handleCreateUser} />
