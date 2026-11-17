@@ -1,5 +1,29 @@
 import { ApiError, request } from './client.js'
 
+// Both admin endpoints return the same public account summary. Keeping the
+// envelope check in one place prevents a malformed success response from ever
+// being treated as a confirmed create/update.
+function readAccountSummary(user, invalidMessage) {
+  if (
+    !user ||
+    typeof user.id !== 'string' ||
+    typeof user.name !== 'string' ||
+    typeof user.email !== 'string' ||
+    !['learner', 'trainer', 'admin'].includes(user.role) ||
+    !['active', 'suspended'].includes(user.status)
+  ) {
+    throw new ApiError(invalidMessage)
+  }
+
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    status: user.status,
+  }
+}
+
 // GET /api/admin/users returns { count, data } with account summaries.
 // The server enforces the admin role; this adapter only validates the envelope.
 export async function getAdminUsers(token) {
@@ -34,24 +58,33 @@ export async function createAdminUser(token, values) {
     token,
     body: values,
   })
-  const user = response?.data
 
-  if (
-    !user ||
-    typeof user.id !== 'string' ||
-    typeof user.name !== 'string' ||
-    typeof user.email !== 'string' ||
-    !['learner', 'trainer', 'admin'].includes(user.role) ||
-    !['active', 'suspended'].includes(user.status)
-  ) {
-    throw new ApiError('Le compte créé renvoyé par le serveur est invalide.')
+  return readAccountSummary(
+    response?.data,
+    'Le compte créé renvoyé par le serveur est invalide.',
+  )
+}
+
+// PATCH /api/admin/users/:id updates one or more editable fields and returns
+// { status, message, data }. The server enforces the admin role and rejects
+// unknown fields, so the adapter only validates the success envelope.
+export async function updateAdminUser(token, id, values) {
+  if (!token) {
+    throw new ApiError('Vous devez être connecté pour modifier un compte.', 401)
   }
 
-  return {
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    role: user.role,
-    status: user.status,
+  if (typeof id !== 'string' || !id) {
+    throw new ApiError('Le compte à modifier est invalide.')
   }
+
+  const response = await request(`/admin/users/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    token,
+    body: values,
+  })
+
+  return readAccountSummary(
+    response?.data,
+    'Le compte modifié renvoyé par le serveur est invalide.',
+  )
 }

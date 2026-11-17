@@ -48,6 +48,7 @@ reference, including fields and endpoint-specific errors.
 | Read trainer statistics | `GET /api/trainer/stats` | Trainer only; cached snapshot, with explicit no-data state. See card 4.7. |
 | List platform accounts (Admin) | `GET /api/admin/users` | Admin token only; learners and trainers receive 403. See card 4.9 (added 2026-11-17). |
 | Create a platform account (Admin) | `POST /api/admin/users` | Admin token only; strict `name`/`email`/`password` body, optional `role`/`status` defaulting to `learner`/`active`. See card 4.10 (added 2026-11-17). |
+| Update a platform account (Admin) | `PATCH /api/admin/users/{id}` | Admin token only; non-empty subset of `name`/`email`/`role`/`status`, password never accepted or rewritten. See card 4.11 (added 2026-11-17). |
 
 These are the selected journeys for this draft. Detailed trainer content CRUD
 and additional screens remain in OpenAPI until the team agrees their contract scope.
@@ -630,6 +631,51 @@ cleared by it. Unexpected failures return 500. This card was added on
 `tests/adminUsers.test.js` (9 tests, including creation); it is not a claim
 about the separately running Docker API image.
 
+### 4.11 Update a platform account (Admin)
+
+| Request | Value |
+| --- | --- |
+| Operation | `PATCH /api/admin/users/{id}` |
+| Access | Admin token only. Learners and trainers receive 403; a missing or invalid token receives 401. |
+| Headers | Bearer token, `Content-Type: application/json` |
+| Path parameter | `id`: 24-character hexadecimal account ID. A malformed ID receives 400 `Invalid ID`; a well-formed unknown ID receives 404 `User not found`. |
+| Body | Non-empty subset of `name` (string, min 2), `email` (valid e-mail), `role` (`learner`/`trainer`/`admin`), `status` (`active`/`suspended`). An empty body is rejected with 400 `errors: [{ field: "body", message: "At least one field is required" }]`. Unknown keys, including `password`, are rejected. |
+| Success | HTTP 200 with `{ status, message, data }` |
+
+```json
+{
+  "status": 200,
+  "message": "Account updated successfully",
+  "data": {
+    "id": "507f1f77bcf86cd799439012",
+    "name": "amine benali",
+    "email": "amine.nouveau@example.test",
+    "role": "admin",
+    "status": "suspended"
+  }
+}
+```
+
+| Response field | Type | Presence / meaning |
+| --- | --- | --- |
+| `status`, `message` | integer, string | Required; `200` and `Account updated successfully`. |
+| `data` | object | Required; the updated public account summary, the same shape as a card 4.9 list entry. |
+| `data.name`, `data.email` | string | Required stored values. The `User` model lowercases both on write, so mixed-case input is returned in lowercase. Fields not supplied in the request keep their previous values. |
+| `data.role`, `data.status` | string enum | Required: `learner`/`trainer`/`admin` and `active`/`suspended`. |
+
+The controller loads the account with the same `name email role status`
+projection used by the list, applies only the allowed fields and saves. The
+password hash is neither selected nor rewritten, and the response contains no
+`password` or `_id`. A duplicate e-mail belonging to another account returns
+409 `{ "status": 409, "message": "Email already registered" }` before any write;
+re-submitting the account's own e-mail is allowed. Authentication and role checks
+run before validation, so 401/403 take priority over a malformed body. A 400
+carries `errors: [{ field, message }]`; a 403 refuses that action without
+clearing an established session. Unexpected failures return 500. This card was
+added on 2026-11-17 with the mounted route and is replayed against MongoDB by
+`tests/adminUsers.test.js`; it is not a claim about the separately running
+Docker API image.
+
 ### Endpoint-card standard for the remaining operations
 
 For every additional screen, record the method/path, path/query/header fields,
@@ -737,7 +783,7 @@ The examples here do not claim that collection has been delivered or run.
 | Enrollment policy | Current enrollment creation accepts any authenticated role. Confirm whether product requirements want learner-only access; document current behavior until changed. |
 | Content ownership | Resource listing is public; some trainer content mutations lack owner checks. Confirm desired policy separately rather than promising stronger protection to React. |
 | Quiz prerequisites | Submission and attempt history do not enforce all quiz-read conditions. Keep this difference visible until the backend team resolves it. |
-| Missing journeys | No mounted enrollment cancellation, private-file download, account update, token refresh or password reset endpoint. `GET /api/admin/users` lists accounts (card 4.9) and `POST /api/admin/users` creates them (card 4.10); neither edits existing accounts. Do not build a contract around guessed URLs. |
+| Missing journeys | No mounted enrollment cancellation, private-file download, token refresh or password reset endpoint. `GET /api/admin/users` lists accounts (card 4.9), `POST /api/admin/users` creates them (card 4.10) and `PATCH /api/admin/users/{id}` edits them (card 4.11). No password-change or account-deletion route exists. Do not build a contract around guessed URLs. |
 | Quiz discovery | Learner quiz reading needs a `quizId`; agree how each screen obtains it from the available payloads/demo data. No quiz-by-module lookup route is mounted. |
 | Seed and examples | Seed account names and representative examples are documented above; actual environment IDs and replay evidence remain to be recorded under FAL-189. |
 | Feedback discovery | Create returns the new feedback ID; there is no mounted learner/course feedback listing endpoint. Agree how the learner screen obtains existing IDs. |
@@ -789,6 +835,17 @@ local test MongoDB with supertest: `tests/adminUsers.test.js` covers 401, 403,
 400 field details, 409 duplicate e-mail, 201 with hashed password plus login of
 the created account, and explicit role/status. The full backend suite passed
 (21 suites, 241 tests) in this checkpoint. The earlier rev 0.4 checks below
+remain dated evidence of that revision, not a new full-suite run.
+
+Admin account update addition — 17 November 2026: the mounted
+`PATCH /api/admin/users/{id}` operation, its Swagger card, the strict
+`adminUpdateUserSchema` validator and card 4.11 were added for OCF-16. Unlike
+the earlier "account update absent" note, this route now exists and is admin-only.
+`tests/adminUsers.test.js` replays 401, 403 without a write, 400 field details and
+empty/unknown bodies, 404/400 id cases, 409 duplicate e-mail without a write,
+partial update with untouched fields, and a full update that lowercases stored
+values while preserving the bcrypt hash. The full backend suite passed
+(21 suites, 249 tests) in this checkpoint. The earlier rev 0.4 checks below
 remain dated evidence of that revision, not a new full-suite run.
 
 Checks performed for revision 0.4 on 29 October 2026:
