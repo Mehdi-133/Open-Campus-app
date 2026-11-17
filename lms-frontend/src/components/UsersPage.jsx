@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { UserDetailsPanel } from './UserDetailsPanel.jsx'
 import { UserFilters } from './UserFilters.jsx'
+import { UserForm } from './UserForm.jsx'
 import { UserList } from './UserList.jsx'
 
 const IDLE = 'idle'
@@ -53,7 +54,7 @@ export function UsersForbidden() {
   )
 }
 
-export function UsersPage({ onLoadUsers }) {
+export function UsersPage({ onCreateUser, onLoadUsers }) {
   // Server request state.
   const [status, setStatus] = useState(IDLE)
   const [users, setUsers] = useState([])
@@ -64,6 +65,7 @@ export function UsersPage({ onLoadUsers }) {
   const [roleFilter, setRoleFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
   const [selectedUserId, setSelectedUserId] = useState(null)
+  const [isFormOpen, setIsFormOpen] = useState(false)
 
   async function loadUsers() {
     if (status === LOADING) {
@@ -127,15 +129,40 @@ export function UsersPage({ onLoadUsers }) {
             au serveur qu’à partir du bouton ci-dessous.
           </p>
         </div>
-        <button
-          className="users-page__load"
-          disabled={status === LOADING}
-          onClick={loadUsers}
-          type="button"
-        >
-          {status === LOADING ? 'Chargement…' : hasUsers ? 'Recharger la liste' : 'Charger les utilisateurs'}
-        </button>
+        <div className="users-page__actions">
+          <button
+            aria-controls="admin-user-form"
+            aria-expanded={isFormOpen}
+            className="users-page__secondary"
+            onClick={() => setIsFormOpen((open) => !open)}
+            type="button"
+          >
+            {isFormOpen ? 'Masquer le formulaire' : 'Nouvel utilisateur'}
+          </button>
+          <button
+            className="users-page__load"
+            disabled={status === LOADING}
+            onClick={loadUsers}
+            type="button"
+          >
+            {status === LOADING ? 'Chargement…' : hasUsers ? 'Recharger la liste' : 'Charger les utilisateurs'}
+          </button>
+        </div>
       </div>
+
+      {isFormOpen ? (
+        <section className="user-form-card" id="admin-user-form" aria-labelledby="user-form-title">
+          <div className="user-form-card__intro">
+            <p className="eyebrow">CRÉATION D’UN COMPTE</p>
+            <h3 id="user-form-title">Nouvel utilisateur</h3>
+            <p className="user-form-card__notice">
+              Le contrat de création Admin n’est pas validé : ce formulaire prépare la saisie et
+              n’envoie aucune requête. Aucun compte ne sera ajouté à la liste.
+            </p>
+          </div>
+          <UserForm onCancel={() => setIsFormOpen(false)} onSubmit={onCreateUser} />
+        </section>
+      ) : null}
 
       <div aria-busy={status === LOADING} aria-live="polite" className="users-page__result">
         {status === IDLE ? (

@@ -71,6 +71,15 @@ function App() {
     }
   }
 
+  // OCF-45: creation is a callback-only form. No Admin creation route is mounted,
+  // so this rejects explicitly instead of calling /register or a guessed URL.
+  // OCF-46 can replace this stub once the server contract is validated.
+  async function handleCreateUser() {
+    throw new ApiError(
+      'La création de compte Admin n’est pas disponible : le contrat serveur n’est pas validé. Votre saisie a été conservée.',
+    )
+  }
+
   if (!session?.user) {
     return (
       <main className="auth-page">
@@ -105,7 +114,7 @@ function App() {
       ? activeView
       : ADMIN_NAVIGATION[0].id
 
-    return <AdminLayout activeView={currentView} onLoadUsers={handleLoadUsers} onLogout={handleLogout} onNavigate={setActiveView} user={session.user} />
+    return <AdminLayout activeView={currentView} onCreateUser={handleCreateUser} onLoadUsers={handleLoadUsers} onLogout={handleLogout} onNavigate={setActiveView} user={session.user} />
   }
 
   if (session.user.role === 'learner') {
