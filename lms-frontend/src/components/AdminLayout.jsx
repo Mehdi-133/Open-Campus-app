@@ -47,7 +47,7 @@ function AdminDashboard({ onNavigate }) {
   )
 }
 
-export function AdminLayout({ activeView, onLoadUsers, onLogout, onNavigate, user }) {
+export function AdminLayout({ activeView, onCreateUser, onLoadUsers, onLogout, onNavigate, user }) {
   const pageTitle = ADMIN_NAVIGATION.find((item) => item.id === activeView)?.label
 
   return (
@@ -62,7 +62,7 @@ export function AdminLayout({ activeView, onLoadUsers, onLogout, onNavigate, use
       {activeView === 'overview' ? (
         <AdminDashboard onNavigate={onNavigate} />
       ) : activeView === 'users' ? (
-        <UsersPage onLoadUsers={onLoadUsers} />
+        <UsersPage onCreateUser={onCreateUser} onLoadUsers={onLoadUsers} />
       ) : (
         <>
           <div className="app-content__heading app-content__heading--section">

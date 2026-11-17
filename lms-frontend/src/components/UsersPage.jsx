@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import { ApiError } from '../api/client.js'
 import { UserDetailsPanel } from './UserDetailsPanel.jsx'
 import { UserFilters } from './UserFilters.jsx'
+import { UserForm } from './UserForm.jsx'
 import { UserList } from './UserList.jsx'
 
 const IDLE = 'idle'
@@ -53,7 +55,7 @@ export function UsersForbidden() {
   )
 }
 
-export function UsersPage({ onLoadUsers }) {
+export function UsersPage({ onCreateUser, onLoadUsers }) {
   // Server request state.
   const [status, setStatus] = useState(IDLE)
   const [users, setUsers] = useState([])
@@ -64,6 +66,8 @@ export function UsersPage({ onLoadUsers }) {
   const [roleFilter, setRoleFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
   const [selectedUserId, setSelectedUserId] = useState(null)
+  const [isFormOpen, setIsFormOpen] = useState(false)
+  const [createdUserName, setCreatedUserName] = useState('')
 
   async function loadUsers() {
     if (status === LOADING) {
@@ -73,6 +77,7 @@ export function UsersPage({ onLoadUsers }) {
     setStatus(LOADING)
     setError('')
     setSelectedUserId(null)
+    setCreatedUserName('')
 
     try {
       const nextUsers = await onLoadUsers()
@@ -117,6 +122,28 @@ export function UsersPage({ onLoadUsers }) {
     setSelectedUserId((currentId) => (currentId === userId ? null : userId))
   }
 
+  // The list is updated immutably only after the callback resolves with a real
+  // server payload. No success state exists on a rejection or on a malformed response.
+  async function handleCreateUser(values) {
+    const createdUser = await onCreateUser(values)
+
+    if (!createdUser || typeof createdUser.id !== 'string') {
+      throw new ApiError('Le compte créé renvoyé par le serveur est invalide.')
+    }
+
+    setUsers((currentUsers) => {
+      const alreadyListed = currentUsers.some((user) => user.id === createdUser.id)
+
+      return alreadyListed
+        ? currentUsers.map((user) => (user.id === createdUser.id ? createdUser : user))
+        : [...currentUsers, createdUser]
+    })
+    setCreatedUserName(createdUser.name || createdUser.email || 'Nouveau compte')
+    setIsFormOpen(false)
+
+    return createdUser
+  }
+
   return (
     <section className="users-page" aria-label="Gestion des utilisateurs">
       <div className="users-page__toolbar">
@@ -127,15 +154,56 @@ export function UsersPage({ onLoadUsers }) {
             au serveur qu’à partir du bouton ci-dessous.
           </p>
         </div>
-        <button
-          className="users-page__load"
-          disabled={status === LOADING}
-          onClick={loadUsers}
-          type="button"
-        >
-          {status === LOADING ? 'Chargement…' : hasUsers ? 'Recharger la liste' : 'Charger les utilisateurs'}
-        </button>
+        <div className="users-page__actions">
+          <button
+            aria-controls="admin-user-form"
+            aria-expanded={isFormOpen}
+            className="users-page__secondary"
+            onClick={() => setIsFormOpen((open) => !open)}
+            type="button"
+          >
+            {isFormOpen ? 'Masquer le formulaire' : 'Nouvel utilisateur'}
+          </button>
+          <button
+            className="users-page__load"
+            disabled={status === LOADING}
+            onClick={loadUsers}
+            type="button"
+          >
+            {status === LOADING ? 'Chargement…' : hasUsers ? 'Recharger la liste' : 'Charger les utilisateurs'}
+          </button>
+        </div>
       </div>
+
+      {isFormOpen ? (
+        <section className="user-form-card" id="admin-user-form" aria-labelledby="user-form-title">
+          <div className="user-form-card__intro">
+            <p className="eyebrow">CRÉATION D’UN COMPTE</p>
+            <h3 id="user-form-title">Nouvel utilisateur</h3>
+            <p className="user-form-card__notice">
+              Le compte est créé seulement après réponse du serveur. En cas de refus, votre saisie
+              est conservée et le champ concerné est signalé.
+            </p>
+          </div>
+          <UserForm onCancel={() => setIsFormOpen(false)} onSubmit={handleCreateUser} />
+        </section>
+      ) : null}
+
+      {createdUserName ? (
+        <div className="users-page__created" role="status">
+          <div>
+            <h3>Compte créé</h3>
+            <p>{createdUserName} a été ajouté à la liste après confirmation du serveur.</p>
+          </div>
+          <button
+            className="users-page__secondary"
+            onClick={() => setCreatedUserName('')}
+            type="button"
+          >
+            Masquer
+          </button>
+        </div>
+      ) : null}
 
       <div aria-busy={status === LOADING} aria-live="polite" className="users-page__result">
         {status === IDLE ? (

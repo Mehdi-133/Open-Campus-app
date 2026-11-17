@@ -47,6 +47,7 @@ reference, including fields and endpoint-specific errors.
 | Create, read and update feedback | `POST /api/feedback`, `GET /api/feedback/{feedbackId}`, `PATCH /api/feedback/{feedbackId}` | Create: course-owner trainer. Read: recipient, current owner or admin. Update: current owner or admin. See card 4.6. |
 | Read trainer statistics | `GET /api/trainer/stats` | Trainer only; cached snapshot, with explicit no-data state. See card 4.7. |
 | List platform accounts (Admin) | `GET /api/admin/users` | Admin token only; learners and trainers receive 403. See card 4.9 (added 2026-11-17). |
+| Create a platform account (Admin) | `POST /api/admin/users` | Admin token only; strict `name`/`email`/`password` body, optional `role`/`status` defaulting to `learner`/`active`. See card 4.10 (added 2026-11-17). |
 
 These are the selected journeys for this draft. Detailed trainer content CRUD
 and additional screens remain in OpenAPI until the team agrees their contract scope.
@@ -583,6 +584,52 @@ it. There is no 404 case for this operation. This card was added on 2026-11-17
 with the mounted route and is source-checked, not replayed against a running
 service in that checkpoint.
 
+### 4.10 Create a platform account (Admin)
+
+| Request | Value |
+| --- | --- |
+| Operation | `POST /api/admin/users` |
+| Access | Admin token only. Learners and trainers receive 403; a missing or invalid token receives 401. |
+| Headers | Bearer token, `Content-Type: application/json` |
+| Body | Required: `name` (string, min 2), `email` (string, valid e-mail), `password` (string, min 8). Optional: `role` (`learner`/`trainer`/`admin`, default `learner`), `status` (`active`/`suspended`, default `active`). Unknown fields are rejected. |
+| Success | HTTP 201 with `{ status, message, data }` |
+
+```json
+{
+  "status": 201,
+  "message": "Account created successfully",
+  "data": {
+    "id": "507f1f77bcf86cd799439013",
+    "name": "sofia laaroussi",
+    "email": "sofia.laaroussi@example.test",
+    "role": "learner",
+    "status": "active"
+  }
+}
+```
+
+| Response field | Type | Presence / meaning |
+| --- | --- | --- |
+| `status`, `message` | integer, string | Required; `201` and `Account created successfully`. |
+| `data` | object | Required; public account summary, the same shape as a card 4.9 list entry. |
+| `data.id` | string | Required 24-character hexadecimal record ID. |
+| `data.name`, `data.email` | string | Required stored values. The `User` model lowercases both on write, so a mixed-case input is returned in lowercase. |
+| `data.role` | string enum | Required: `learner`, `trainer`, `admin`; `learner` when omitted. |
+| `data.status` | string enum | Required: `active`, `suspended`; `active` when omitted. |
+
+The password is hashed with bcrypt before storage and is never selected or
+returned. The response contains no `_id` and no `password` field. A duplicate
+e-mail is checked before insertion and returns the shared 409 envelope
+`{ "status": 409, "message": "Email already registered" }` without creating a
+second account. Validation failures return 400 with
+`errors: [{ field, message }]`; `role` and `status` use the same detail shape.
+Authentication and role checks run before validation, so 401/403 take priority
+over a malformed body. A 403 refuses that action; an established session is not
+cleared by it. Unexpected failures return 500. This card was added on
+2026-11-17 with the mounted route and is replayed against MongoDB by
+`tests/adminUsers.test.js` (9 tests, including creation); it is not a claim
+about the separately running Docker API image.
+
 ### Endpoint-card standard for the remaining operations
 
 For every additional screen, record the method/path, path/query/header fields,
@@ -690,7 +737,7 @@ The examples here do not claim that collection has been delivered or run.
 | Enrollment policy | Current enrollment creation accepts any authenticated role. Confirm whether product requirements want learner-only access; document current behavior until changed. |
 | Content ownership | Resource listing is public; some trainer content mutations lack owner checks. Confirm desired policy separately rather than promising stronger protection to React. |
 | Quiz prerequisites | Submission and attempt history do not enforce all quiz-read conditions. Keep this difference visible until the backend team resolves it. |
-| Missing journeys | No mounted enrollment cancellation, private-file download, user/role creation or update, token refresh or password reset endpoint. `GET /api/admin/users` lists accounts (card 4.9) but does not create or edit them. Do not build a contract around guessed URLs. |
+| Missing journeys | No mounted enrollment cancellation, private-file download, account update, token refresh or password reset endpoint. `GET /api/admin/users` lists accounts (card 4.9) and `POST /api/admin/users` creates them (card 4.10); neither edits existing accounts. Do not build a contract around guessed URLs. |
 | Quiz discovery | Learner quiz reading needs a `quizId`; agree how each screen obtains it from the available payloads/demo data. No quiz-by-module lookup route is mounted. |
 | Seed and examples | Seed account names and representative examples are documented above; actual environment IDs and replay evidence remain to be recorded under FAL-189. |
 | Feedback discovery | Create returns the new feedback ID; there is no mounted learner/course feedback listing endpoint. Agree how the learner screen obtains existing IDs. |
@@ -734,6 +781,15 @@ operation, its Swagger card and shared `AdminUser` schema were added with card 4
 This is a source-checked contract; a replay against a running API and MongoDB has
 not been recorded in this checkpoint. The earlier rev 0.4 checks below remain
 dated evidence of that revision, not a new full-suite run.
+
+Admin account creation addition — 17 November 2026: the mounted `POST /api/admin/users`
+operation, its Swagger card, the `adminCreateUserSchema` validator and card 4.10
+were added. Unlike the list addition, this operation was replayed against the
+local test MongoDB with supertest: `tests/adminUsers.test.js` covers 401, 403,
+400 field details, 409 duplicate e-mail, 201 with hashed password plus login of
+the created account, and explicit role/status. The full backend suite passed
+(21 suites, 241 tests) in this checkpoint. The earlier rev 0.4 checks below
+remain dated evidence of that revision, not a new full-suite run.
 
 Checks performed for revision 0.4 on 29 October 2026:
 

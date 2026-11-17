@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { getAdminUsers } from './api/adminUsers.js'
+import { createAdminUser, getAdminUsers } from './api/adminUsers.js'
 import { getCurrentUser, login } from './api/auth.js'
 import { getMyEnrollments } from './api/enrollments.js'
 import { ApiError } from './api/client.js'
@@ -71,6 +71,24 @@ function App() {
     }
   }
 
+  // Account creation is an explicit submit event: the shared API layer owns the
+  // POST. A 401 purges the session; a 403 preserves it and is shown as "Accès refusé".
+  async function handleCreateUser(values) {
+    if (!session?.token || session.user.role !== 'admin') {
+      throw new ApiError('Accès refusé.', 403)
+    }
+
+    try {
+      return await createAdminUser(session.token, values)
+    } catch (error) {
+      if (error?.status === 401) {
+        handleLogout()
+      }
+
+      throw error
+    }
+  }
+
   if (!session?.user) {
     return (
       <main className="auth-page">
@@ -105,7 +123,7 @@ function App() {
       ? activeView
       : ADMIN_NAVIGATION[0].id
 
-    return <AdminLayout activeView={currentView} onLoadUsers={handleLoadUsers} onLogout={handleLogout} onNavigate={setActiveView} user={session.user} />
+    return <AdminLayout activeView={currentView} onCreateUser={handleCreateUser} onLoadUsers={handleLoadUsers} onLogout={handleLogout} onNavigate={setActiveView} user={session.user} />
   }
 
   if (session.user.role === 'learner') {

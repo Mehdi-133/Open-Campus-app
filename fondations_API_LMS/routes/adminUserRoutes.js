@@ -3,7 +3,12 @@ const express = require("express");
 const authenticate = require("../middlewares/authenticate");
 const { authorize } = require("../middlewares/authorize");
 const { roles } = require("../consts/roles");
-const { listUsers } = require("../controllers/adminUserController");
+const validate = require("../middlewares/validate");
+const { adminCreateUserSchema } = require("../validators/authValidator");
+const {
+  listUsers,
+  createUser,
+} = require("../controllers/adminUserController");
 
 const router = express.Router();
 
@@ -71,5 +76,136 @@ const router = express.Router();
  *               $ref: '#/components/schemas/ApiError'
  */
 router.get("/", authenticate, authorize(roles.ADMIN), listUsers);
+
+/**
+ * @swagger
+ * /api/admin/users:
+ *   post:
+ *     summary: Create a platform account (Admin)
+ *     description: >-
+ *       Admin only. Creates an account from a strict name/email/password body and
+ *       returns its public account summary. `role` defaults to `learner` and
+ *       `status` defaults to `active`; both may be supplied by an admin. The
+ *       password is hashed before storage and is never returned. A duplicate
+ *       e-mail returns 409 with the shared error-envelope shape.
+ *     tags:
+ *       - Admin
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - email
+ *               - password
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 minLength: 2
+ *                 example: Sofia Laaroussi
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: sofia.laaroussi@example.test
+ *               password:
+ *                 type: string
+ *                 minLength: 8
+ *                 example: password123
+ *               role:
+ *                 type: string
+ *                 enum: [learner, trainer, admin]
+ *                 default: learner
+ *               status:
+ *                 type: string
+ *                 enum: [active, suspended]
+ *                 default: active
+ *           example:
+ *             name: Sofia Laaroussi
+ *             email: sofia.laaroussi@example.test
+ *             password: password123
+ *     responses:
+ *       '201':
+ *         description: Account created. Returns a public account summary in data.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   $ref: '#/components/schemas/AdminUser'
+ *               required:
+ *                 - status
+ *                 - message
+ *                 - data
+ *             example:
+ *               status: 201
+ *               message: Account created successfully
+ *               data:
+ *                 id: 507f1f77bcf86cd799439012
+ *                 name: Sofia Laaroussi
+ *                 email: sofia.laaroussi@example.test
+ *                 role: learner
+ *                 status: active
+ *       '400':
+ *         description: Validation error with field/message details.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
+ *             example:
+ *               status: 400
+ *               message: Validation error
+ *               errors:
+ *                 - field: email
+ *                   message: Invalid email address
+ *       '401':
+ *         description: Missing, invalid, or expired Bearer token.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
+ *             example:
+ *               status: 401
+ *               message: Authorization header missing
+ *       '403':
+ *         description: Admin role required. An established session is not cleared by this refusal.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
+ *             example:
+ *               status: 403
+ *               message: Forbidden
+ *       '409':
+ *         description: An account with that e-mail already exists.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
+ *             example:
+ *               status: 409
+ *               message: Email already registered
+ *       '500':
+ *         description: Internal server error.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
+ */
+router.post(
+  "/",
+  authenticate,
+  authorize(roles.ADMIN),
+  validate(adminCreateUserSchema),
+  createUser,
+);
 
 module.exports = router;
