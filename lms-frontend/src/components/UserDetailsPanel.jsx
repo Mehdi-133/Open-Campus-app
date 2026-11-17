@@ -1,7 +1,7 @@
 import { initialFor, labelFor, ROLE_LABELS, STATUS_LABELS } from './userLabels.js'
 
 // Detail view for the selected row. The parent owns selectedId and passes the user down.
-export function UserDetailsPanel({ onClose, user }) {
+export function UserDetailsPanel({ onClose, onEdit, user }) {
   if (!user) {
     return (
       <aside aria-label="Fiche utilisateur" className="user-details user-details--empty">
@@ -49,6 +49,14 @@ export function UserDetailsPanel({ onClose, user }) {
       <p className="user-details__note">
         Le mot de passe n’est jamais renvoyé par l’API et n’apparaît donc jamais ici.
       </p>
+
+      {onEdit ? (
+        <div className="user-details__actions">
+          <button className="user-details__edit" onClick={() => onEdit(user)} type="button">
+            Modifier le compte
+          </button>
+        </div>
+      ) : null}
     </aside>
   )
 }

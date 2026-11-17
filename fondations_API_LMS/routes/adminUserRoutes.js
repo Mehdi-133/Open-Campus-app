@@ -4,10 +4,14 @@ const authenticate = require("../middlewares/authenticate");
 const { authorize } = require("../middlewares/authorize");
 const { roles } = require("../consts/roles");
 const validate = require("../middlewares/validate");
-const { adminCreateUserSchema } = require("../validators/authValidator");
+const {
+  adminCreateUserSchema,
+  adminUpdateUserSchema,
+} = require("../validators/authValidator");
 const {
   listUsers,
   createUser,
+  updateUser,
 } = require("../controllers/adminUserController");
 
 const router = express.Router();
@@ -206,6 +210,151 @@ router.post(
   authorize(roles.ADMIN),
   validate(adminCreateUserSchema),
   createUser,
+);
+
+/**
+ * @swagger
+ * /api/admin/users/{id}:
+ *   patch:
+ *     summary: Update a platform account (Admin)
+ *     description: >-
+ *       Admin only. Accepts any non-empty subset of name, email, role and status
+ *       and returns the updated public account summary. The password hash is
+ *       never read or rewritten. Unknown keys (including password) are rejected
+ *       with 400. A duplicate e-mail returns 409 and an unknown id returns 404.
+ *       A malformed id returns 400 with the message `Invalid ID`.
+ *     tags:
+ *       - Admin
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           pattern: '^[a-fA-F0-9]{24}$'
+ *         example: 507f1f77bcf86cd799439012
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             minProperties: 1
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 minLength: 2
+ *                 example: Sofia Laaroussi
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: sofia.laaroussi@example.test
+ *               role:
+ *                 type: string
+ *                 enum: [learner, trainer, admin]
+ *               status:
+ *                 type: string
+ *                 enum: [active, suspended]
+ *           example:
+ *             name: Sofia Laaroussi
+ *             status: suspended
+ *     responses:
+ *       '200':
+ *         description: Account updated. Returns the public account summary in data.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   $ref: '#/components/schemas/AdminUser'
+ *               required:
+ *                 - status
+ *                 - message
+ *                 - data
+ *             example:
+ *               status: 200
+ *               message: Account updated successfully
+ *               data:
+ *                 id: 507f1f77bcf86cd799439012
+ *                 name: sofia laaroussi
+ *                 email: sofia.laaroussi@example.test
+ *                 role: learner
+ *                 status: suspended
+ *       '400':
+ *         description: Validation error (field/message details) or a malformed id.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
+ *             examples:
+ *               validation:
+ *                 value:
+ *                   status: 400
+ *                   message: Validation error
+ *                   errors:
+ *                     - field: email
+ *                       message: Invalid email address
+ *               emptyBody:
+ *                 value:
+ *                   status: 400
+ *                   message: Validation error
+ *                   errors:
+ *                     - field: body
+ *                       message: At least one field is required
+ *               invalidId:
+ *                 value:
+ *                   status: 400
+ *                   message: Invalid ID
+ *       '401':
+ *         description: Missing, invalid, or expired Bearer token.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
+ *             example:
+ *               status: 401
+ *               message: Authorization header missing
+ *       '403':
+ *         description: Admin role required. An established session is not cleared by this refusal.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
+ *             example:
+ *               status: 403
+ *               message: Forbidden
+ *       '404':
+ *         description: No account exists with that id.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
+ *             example:
+ *               status: 404
+ *               message: User not found
+ *       '409':
+ *         description: An account with that e-mail already exists.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiError'
+ *             example:
+ *               status: 409
+ *               message: Email already registered
+ */
+router.patch(
+  "/:id",
+  authenticate,
+  authorize(roles.ADMIN),
+  validate(adminUpdateUserSchema),
+  updateUser,
 );
 
 module.exports = router;

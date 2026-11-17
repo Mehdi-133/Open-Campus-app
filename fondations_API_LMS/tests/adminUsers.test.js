@@ -208,4 +208,196 @@ describe("Admin users", () => {
             expect(stored.status).toBe("suspended");
         });
     });
+
+    describe("update", () => {
+        const newEmail = (label) => {
+            const email = `${label}-${randomUUID()}@${domain}`;
+            createdEmails.push(email);
+            return email;
+        };
+
+        const createTarget = async (label) => {
+            const hashedPassword = await bcrypt.hash(password, 10);
+
+            return User.create({
+                name: `${label} Target`,
+                email: newEmail(label),
+                password: hashedPassword,
+                role: "learner",
+                status: "active",
+            });
+        };
+
+        test("returns 401 without a token", async () => {
+            const response = await request(app)
+                .patch(`/api/admin/users/${learner._id}`)
+                .send({ name: "No Token" });
+
+            expect(response.statusCode).toBe(401);
+            expect(response.body.message).toBe("Authorization header missing");
+        });
+
+        test("returns 403 for a learner without changing the account", async () => {
+            const response = await request(app)
+                .patch(`/api/admin/users/${learner._id}`)
+                .set("Authorization", `Bearer ${learnerToken}`)
+                .send({ name: "Forbidden Rename", status: "suspended" });
+
+            expect(response.statusCode).toBe(403);
+            expect(response.body).not.toHaveProperty("data");
+
+            const stored = await User.findById(learner._id);
+            expect(stored.name).toBe(learner.name);
+            expect(stored.status).toBe("active");
+        });
+
+        test("returns 400 with field details for invalid values", async () => {
+            const response = await request(app)
+                .patch(`/api/admin/users/${learner._id}`)
+                .set("Authorization", `Bearer ${adminToken}`)
+                .send({
+                    name: "A",
+                    email: "not-an-email",
+                    role: "superuser",
+                    status: "banned",
+                });
+
+            expect(response.statusCode).toBe(400);
+            expect(response.body.message).toBe("Validation error");
+            const fields = response.body.errors.map((issue) => issue.field);
+            expect(fields).toEqual(expect.arrayContaining(["name", "email", "role", "status"]));
+
+            const stored = await User.findById(learner._id);
+            expect(stored.name).toBe(learner.name);
+        });
+
+        test("returns 400 for an empty body or an unknown field", async () => {
+            const empty = await request(app)
+                .patch(`/api/admin/users/${learner._id}`)
+                .set("Authorization", `Bearer ${adminToken}`)
+                .send({});
+
+            expect(empty.statusCode).toBe(400);
+            expect(empty.body.errors).toEqual(
+                expect.arrayContaining([
+                    { field: "body", message: "At least one field is required" },
+                ]),
+            );
+
+            const unknown = await request(app)
+                .patch(`/api/admin/users/${learner._id}`)
+                .set("Authorization", `Bearer ${adminToken}`)
+                .send({ password: "another-password" });
+
+            expect(unknown.statusCode).toBe(400);
+            expect(unknown.body.errors.some((issue) => issue.field === "body")).toBe(true);
+
+            const stored = await User.findById(learner._id).select("+password");
+            expect(await bcrypt.compare(password, stored.password)).toBe(true);
+        });
+
+        test("returns 404 for a missing account and 400 for a malformed id", async () => {
+            const missing = await request(app)
+                .patch(`/api/admin/users/${new mongoose.Types.ObjectId().toString()}`)
+                .set("Authorization", `Bearer ${adminToken}`)
+                .send({ name: "Ghost User" });
+
+            expect(missing.statusCode).toBe(404);
+            expect(missing.body).toEqual({ status: 404, message: "User not found" });
+
+            const malformed = await request(app)
+                .patch("/api/admin/users/not-an-object-id")
+                .set("Authorization", `Bearer ${adminToken}`)
+                .send({ name: "Bad Id" });
+
+            expect(malformed.statusCode).toBe(400);
+            expect(malformed.body).toEqual({ status: 400, message: "Invalid ID" });
+        });
+
+        test("returns 409 for another account's e-mail without changing anything", async () => {
+            const target = await createTarget("conflict");
+
+            const response = await request(app)
+                .patch(`/api/admin/users/${target._id}`)
+                .set("Authorization", `Bearer ${adminToken}`)
+                .send({ email: learner.email });
+
+            expect(response.statusCode).toBe(409);
+            expect(response.body).toEqual({ status: 409, message: "Email already registered" });
+
+            const stored = await User.findById(target._id);
+            expect(stored.email).toBe(target.email);
+        });
+
+        test("updates one field and leaves the others untouched", async () => {
+            const target = await createTarget("partial");
+
+            const response = await request(app)
+                .patch(`/api/admin/users/${target._id}`)
+                .set("Authorization", `Bearer ${adminToken}`)
+                .send({ status: "suspended" });
+
+            expect(response.statusCode).toBe(200);
+            expect(Object.keys(response.body.data).sort()).toEqual([
+                "email", "id", "name", "role", "status",
+            ]);
+            expect(response.body.data).toEqual({
+                id: target._id.toString(),
+                name: target.name,
+                email: target.email,
+                role: "learner",
+                status: "suspended",
+            });
+            expect(response.body.data).not.toHaveProperty("password");
+
+            const stored = await User.findById(target._id);
+            expect(stored.status).toBe("suspended");
+            expect(stored.name).toBe(target.name);
+            expect(stored.email).toBe(target.email);
+            expect(stored.role).toBe("learner");
+        });
+
+        test("updates every editable field, stores lowercase values and keeps the password", async () => {
+            const target = await createTarget("full");
+            const beforeHash = (await User.findById(target._id).select("+password")).password;
+            const nextEmail = newEmail("renamed");
+
+            const response = await request(app)
+                .patch(`/api/admin/users/${target._id}`)
+                .set("Authorization", `Bearer ${adminToken}`)
+                .send({
+                    name: "Amine BENALI",
+                    email: nextEmail.toUpperCase(),
+                    role: "trainer",
+                    status: "suspended",
+                });
+
+            expect(response.statusCode).toBe(200);
+            expect(response.body.status).toBe(200);
+            expect(response.body.message).toBe("Account updated successfully");
+            expect(response.body.data).toEqual({
+                id: target._id.toString(),
+                name: "amine benali",
+                email: nextEmail,
+                role: "trainer",
+                status: "suspended",
+            });
+            expect(response.body.data).not.toHaveProperty("password");
+
+            const stored = await User.findById(target._id).select("+password");
+            expect(stored.name).toBe("amine benali");
+            expect(stored.email).toBe(nextEmail);
+            expect(stored.role).toBe("trainer");
+            expect(stored.status).toBe("suspended");
+            expect(stored.password).toBe(beforeHash);
+
+            // A suspended account is refused at login with 403, which confirms the
+            // status update reached storage while the password hash stayed usable.
+            const login = await request(app)
+                .post("/api/auth/login")
+                .send({ email: nextEmail, password });
+            expect(login.statusCode).toBe(403);
+            expect(login.body.message).toBe("Account is suspended");
+        });
+    });
 });

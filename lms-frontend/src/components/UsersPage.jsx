@@ -55,7 +55,7 @@ export function UsersForbidden() {
   )
 }
 
-export function UsersPage({ onCreateUser, onLoadUsers }) {
+export function UsersPage({ onCreateUser, onLoadUsers, onUpdateUser }) {
   // Server request state.
   const [status, setStatus] = useState(IDLE)
   const [users, setUsers] = useState([])
@@ -67,7 +67,10 @@ export function UsersPage({ onCreateUser, onLoadUsers }) {
   const [statusFilter, setStatusFilter] = useState('all')
   const [selectedUserId, setSelectedUserId] = useState(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
-  const [createdUserName, setCreatedUserName] = useState('')
+  const [editingUser, setEditingUser] = useState(null)
+  const [notice, setNotice] = useState(null)
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const [refreshError, setRefreshError] = useState('')
 
   async function loadUsers() {
     if (status === LOADING) {
@@ -77,7 +80,8 @@ export function UsersPage({ onCreateUser, onLoadUsers }) {
     setStatus(LOADING)
     setError('')
     setSelectedUserId(null)
-    setCreatedUserName('')
+    setNotice(null)
+    setRefreshError('')
 
     try {
       const nextUsers = await onLoadUsers()
@@ -87,6 +91,31 @@ export function UsersPage({ onCreateUser, onLoadUsers }) {
       setUsers([])
       setError(requestError?.message || 'La demande a échoué. Réessayez.')
       setStatus(requestError?.status === 403 ? FORBIDDEN : ERROR)
+    }
+  }
+
+  // A confirmed update is already in the list. This follow-up request only
+  // replaces it with the server's authoritative list; if it fails, the
+  // confirmed row is kept and a non-blocking warning is shown instead.
+  async function refreshUsers() {
+    setIsRefreshing(true)
+    setRefreshError('')
+
+    try {
+      const nextUsers = await onLoadUsers()
+
+      if (Array.isArray(nextUsers)) {
+        setUsers(nextUsers)
+      } else {
+        setRefreshError('La liste renvoyée par le serveur est invalide.')
+      }
+    } catch (requestError) {
+      // A 401 is handled by App, which purges the session and unmounts this view.
+      if (requestError?.status !== 401) {
+        setRefreshError(requestError?.message || 'La liste n’a pas pu être actualisée.')
+      }
+    } finally {
+      setIsRefreshing(false)
     }
   }
 
@@ -122,6 +151,23 @@ export function UsersPage({ onCreateUser, onLoadUsers }) {
     setSelectedUserId((currentId) => (currentId === userId ? null : userId))
   }
 
+  function handleToggleCreateForm() {
+    setEditingUser(null)
+    setIsFormOpen((open) => !open)
+  }
+
+  function handleEditUser(user) {
+    setIsFormOpen(false)
+    setRefreshError('')
+    setEditingUser(user)
+  }
+
+  // Cancelling discards the form state by unmounting it: the next edit remounts
+  // a fresh form from the server-provided row (via the key below).
+  function handleCancelEdit() {
+    setEditingUser(null)
+  }
+
   // The list is updated immutably only after the callback resolves with a real
   // server payload. No success state exists on a rejection or on a malformed response.
   async function handleCreateUser(values) {
@@ -138,10 +184,32 @@ export function UsersPage({ onCreateUser, onLoadUsers }) {
         ? currentUsers.map((user) => (user.id === createdUser.id ? createdUser : user))
         : [...currentUsers, createdUser]
     })
-    setCreatedUserName(createdUser.name || createdUser.email || 'Nouveau compte')
+    setNotice({ kind: 'created', name: createdUser.name || createdUser.email || 'Nouveau compte' })
     setIsFormOpen(false)
 
     return createdUser
+  }
+
+  async function handleUpdateUser(values) {
+    if (!editingUser?.id) {
+      throw new ApiError('Aucun compte n’a été sélectionné pour la modification.')
+    }
+
+    const updatedUser = await onUpdateUser(editingUser.id, values)
+
+    if (!updatedUser || typeof updatedUser.id !== 'string') {
+      throw new ApiError('Le compte modifié renvoyé par le serveur est invalide.')
+    }
+
+    setUsers((currentUsers) => currentUsers.map(
+      (user) => (user.id === updatedUser.id ? updatedUser : user),
+    ))
+    setEditingUser(null)
+    setNotice({ kind: 'updated', name: updatedUser.name || updatedUser.email || 'Compte' })
+
+    await refreshUsers()
+
+    return updatedUser
   }
 
   return (
@@ -159,7 +227,7 @@ export function UsersPage({ onCreateUser, onLoadUsers }) {
             aria-controls="admin-user-form"
             aria-expanded={isFormOpen}
             className="users-page__secondary"
-            onClick={() => setIsFormOpen((open) => !open)}
+            onClick={handleToggleCreateForm}
             type="button"
           >
             {isFormOpen ? 'Masquer le formulaire' : 'Nouvel utilisateur'}
@@ -189,15 +257,40 @@ export function UsersPage({ onCreateUser, onLoadUsers }) {
         </section>
       ) : null}
 
-      {createdUserName ? (
+      {editingUser ? (
+        <section className="user-form-card user-form-card--edit" aria-labelledby="user-edit-form-title">
+          <div className="user-form-card__intro">
+            <p className="eyebrow">MODIFICATION D’UN COMPTE</p>
+            <h3 id="user-edit-form-title">Modifier {editingUser.name || editingUser.email}</h3>
+            <p className="user-form-card__notice">
+              Les champs sont préremplis avec les données renvoyées par le serveur. Annulez pour les
+              ignorer, ou réinitialisez pour revenir à ces valeurs.
+            </p>
+          </div>
+          <UserForm
+            initialValues={editingUser}
+            key={editingUser.id}
+            mode="edit"
+            onCancel={handleCancelEdit}
+            onSubmit={handleUpdateUser}
+          />
+        </section>
+      ) : null}
+
+      {notice ? (
         <div className="users-page__created" role="status">
           <div>
-            <h3>Compte créé</h3>
-            <p>{createdUserName} a été ajouté à la liste après confirmation du serveur.</p>
+            <h3>{notice.kind === 'updated' ? 'Compte modifié' : 'Compte créé'}</h3>
+            <p>
+              {notice.name} a été {notice.kind === 'updated' ? 'mis à jour' : 'ajouté'} à la liste
+              après confirmation du serveur.
+            </p>
+            {isRefreshing ? <p className="users-page__notice-detail">Actualisation de la liste…</p> : null}
+            {refreshError ? <p className="users-page__notice-error">{refreshError}</p> : null}
           </div>
           <button
             className="users-page__secondary"
-            onClick={() => setCreatedUserName('')}
+            onClick={() => { setNotice(null); setRefreshError('') }}
             type="button"
           >
             Masquer
@@ -205,7 +298,7 @@ export function UsersPage({ onCreateUser, onLoadUsers }) {
         </div>
       ) : null}
 
-      <div aria-busy={status === LOADING} aria-live="polite" className="users-page__result">
+      <div aria-busy={status === LOADING || isRefreshing} aria-live="polite" className="users-page__result">
         {status === IDLE ? (
           <p className="users-page__hint">
             Aucun chargement n’a encore été demandé. Utilisez « Charger les utilisateurs » pour afficher la liste.
@@ -239,7 +332,11 @@ export function UsersPage({ onCreateUser, onLoadUsers }) {
                   selectedId={selectedUserId}
                   users={filteredUsers}
                 />
-                <UserDetailsPanel onClose={() => setSelectedUserId(null)} user={selectedUser} />
+                <UserDetailsPanel
+                  onClose={() => setSelectedUserId(null)}
+                  onEdit={handleEditUser}
+                  user={selectedUser}
+                />
               </div>
             ) : (
               <div className="users-page__state">
