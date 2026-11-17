@@ -75,6 +75,10 @@ function App() {
   // so this rejects explicitly instead of calling /register or a guessed URL.
   // OCF-46 can replace this stub once the server contract is validated.
   async function handleCreateUser() {
+    if (!session?.token || session.user.role !== 'admin') {
+      throw new ApiError('Accès refusé.', 403)
+    }
+
     throw new ApiError(
       'La création de compte Admin n’est pas disponible : le contrat serveur n’est pas validé. Votre saisie a été conservée.',
     )

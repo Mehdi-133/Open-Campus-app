@@ -1475,6 +1475,30 @@
   color: #a32336;
 }
 
+.users-page__created {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 22px;
+  border: 1px solid #b8ded5;
+  border-radius: 16px;
+  background: #effaf6;
+}
+
+.users-page__created h3 {
+  margin-bottom: 5px;
+  color: #12624f;
+  font-size: 15px;
+}
+
+.users-page__created p {
+  color: #36554d;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
 .users-page__retry {
   min-height: 40px;
   padding: 0 16px;
