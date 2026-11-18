@@ -1,7 +1,8 @@
-import { COURSE_STATUS_LABELS, labelFor } from './courseLabels.js'
+import { COURSE_STATUS_LABELS, LEVEL_LABELS, labelFor } from './courseLabels.js'
 
 export const ALL_FILTER = 'all'
 export const COURSE_STATUS_FILTERS = ['draft', 'published', 'archived']
+const COURSE_LEVEL_FILTERS = ['beginner', 'intermediate', 'advanced']
 
 const CATEGORY_PREFIX = 'category:'
 
@@ -13,6 +14,24 @@ function categoryFromFilterValue(value) {
   return typeof value === 'string' && value.startsWith(CATEGORY_PREFIX)
     ? value.slice(CATEGORY_PREFIX.length)
     : null
+}
+
+function normalizeText(value) {
+  return String(value || '')
+    .toLocaleLowerCase('fr')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+}
+
+function optionsFromCounts(counts, labels, order) {
+  return order
+    .filter((value) => counts[value] > 0)
+    .map((value) => ({
+      count: counts[value],
+      label: labelFor(labels, value),
+      value,
+    }))
 }
 
 export function courseCategoryOptions(courses) {
@@ -37,26 +56,40 @@ export function courseStatusOptions(courses) {
     return totals
   }, Object.create(null))
 
-  return COURSE_STATUS_FILTERS
-    .filter((status) => counts[status] > 0)
-    .map((status) => ({
-      count: counts[status],
-      label: labelFor(COURSE_STATUS_LABELS, status),
-      value: status,
-    }))
+  return optionsFromCounts(counts, COURSE_STATUS_LABELS, COURSE_STATUS_FILTERS)
 }
 
-export function matchesCourseFilters(course, category, status) {
+export function courseLevelOptions(courses) {
+  const counts = courses.reduce((totals, course) => {
+    totals[course.level] = (totals[course.level] || 0) + 1
+    return totals
+  }, Object.create(null))
+
+  return optionsFromCounts(counts, LEVEL_LABELS, COURSE_LEVEL_FILTERS)
+}
+
+// Every predicate is local and pure: filtering never calls the API.
+export function matchesCourseFilters(course, filters = {}) {
+  const category = filters.category ?? ALL_FILTER
+  const status = filters.status ?? ALL_FILTER
+  const level = filters.level ?? ALL_FILTER
+  const keyword = normalizeText(filters.keyword)
+
   const selectedCategory = categoryFromFilterValue(category)
   const categoryMatches = category === ALL_FILTER
     || (selectedCategory !== null && course.category === selectedCategory)
   const statusMatches = status === ALL_FILTER || course.status === status
+  const levelMatches = level === ALL_FILTER || course.level === level
+  const keywordMatches = !keyword || normalizeText(course.title).includes(keyword)
 
-  return categoryMatches && statusMatches
+  return categoryMatches && statusMatches && levelMatches && keywordMatches
 }
 
-export function hasActiveCourseFilters(category, status) {
-  return category !== ALL_FILTER || status !== ALL_FILTER
+export function hasActiveCourseFilters(filters = {}) {
+  return (filters.category ?? ALL_FILTER) !== ALL_FILTER
+    || (filters.status ?? ALL_FILTER) !== ALL_FILTER
+    || (filters.level ?? ALL_FILTER) !== ALL_FILTER
+    || Boolean(normalizeText(filters.keyword))
 }
 
 export function courseFilterCountLabel(visibleCount, totalCount) {
