@@ -59,8 +59,17 @@ export function CoursesPage({ onLoadCourses }) {
   const [status, setStatus] = useState(IDLE)
   const [courses, setCourses] = useState([])
   const [error, setError] = useState('')
+  const [keywordFilter, setKeywordFilter] = useState('')
+  const [levelFilter, setLevelFilter] = useState(ALL_FILTER)
   const [categoryFilter, setCategoryFilter] = useState(ALL_FILTER)
   const [statusFilter, setStatusFilter] = useState(ALL_FILTER)
+
+  function resetFilters() {
+    setKeywordFilter('')
+    setLevelFilter(ALL_FILTER)
+    setCategoryFilter(ALL_FILTER)
+    setStatusFilter(ALL_FILTER)
+  }
 
   async function loadCourses() {
     if (status === LOADING) {
@@ -69,8 +78,7 @@ export function CoursesPage({ onLoadCourses }) {
 
     setStatus(LOADING)
     setError('')
-    setCategoryFilter(ALL_FILTER)
-    setStatusFilter(ALL_FILTER)
+    resetFilters()
 
     try {
       const nextCourses = await onLoadCourses()
@@ -85,8 +93,14 @@ export function CoursesPage({ onLoadCourses }) {
 
   // The visible list is derived during render from the server data and both
   // local filters. No second list is stored in state and no request is made.
+  const activeFilters = {
+    category: categoryFilter,
+    keyword: keywordFilter,
+    level: levelFilter,
+    status: statusFilter,
+  }
   const filteredCourses = courses.filter((course) => (
-    matchesCourseFilters(course, categoryFilter, statusFilter)
+    matchesCourseFilters(course, activeFilters)
   ))
   const hasCourses = status === SUCCESS && courses.length > 0
 
@@ -133,11 +147,12 @@ export function CoursesPage({ onLoadCourses }) {
             <CourseFilters
               category={categoryFilter}
               courses={courses}
+              keyword={keywordFilter}
+              level={levelFilter}
               onCategoryChange={setCategoryFilter}
-              onReset={() => {
-                setCategoryFilter(ALL_FILTER)
-                setStatusFilter(ALL_FILTER)
-              }}
+              onKeywordChange={setKeywordFilter}
+              onLevelChange={setLevelFilter}
+              onReset={resetFilters}
               onStatusChange={setStatusFilter}
               resultCount={filteredCourses.length}
               status={statusFilter}
@@ -154,10 +169,7 @@ export function CoursesPage({ onLoadCourses }) {
                 </div>
                 <button
                   className="users-page__retry"
-                  onClick={() => {
-                    setCategoryFilter(ALL_FILTER)
-                    setStatusFilter(ALL_FILTER)
-                  }}
+                  onClick={resetFilters}
                   type="button"
                 >
                   Réinitialiser les filtres
