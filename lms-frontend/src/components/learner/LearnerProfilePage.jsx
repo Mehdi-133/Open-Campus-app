@@ -15,14 +15,13 @@ export function LearnerProfilePage({ user }) {
   return (
     <section className="profile-grid" aria-label="Mon profil">
       <article className="profile-card">
-        <p className="eyebrow">MON PROFIL</p>
-
-        <div className="profile-card__identity">
-          <span className="profile-card__avatar" aria-hidden="true">{initialFor(user)}</span>
+        <div className="profile-card__hero">
           <div>
+            <p className="profile-card__overline">VOTRE COMPTE</p>
             <h3>{displayName}</h3>
             <p className="profile-card__email">{user.email || 'Adresse e-mail non renseignée'}</p>
           </div>
+          <span className="profile-card__avatar" aria-hidden="true">{initialFor(user)}</span>
         </div>
 
         <dl className="profile-card__list">

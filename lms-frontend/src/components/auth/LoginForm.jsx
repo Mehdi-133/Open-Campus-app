@@ -65,9 +65,9 @@ export function LoginForm({ onSubmit }) {
   return (
     <form className="login-form" noValidate onSubmit={handleSubmit}>
       <div className="login-form__heading">
-        <p className="eyebrow">VOTRE ESPACE D’APPRENTISSAGE</p>
+        <p className="eyebrow">CONNEXION</p>
         <h1>Bon retour.</h1>
-        <p>Connectez-vous pour continuer votre parcours.</p>
+        <p>Connectez-vous pour accéder à votre espace.</p>
       </div>
 
       <FormField

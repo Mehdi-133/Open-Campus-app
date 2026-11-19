@@ -13,7 +13,6 @@ import { LoginForm } from './components/auth/LoginForm.jsx'
 import './App.css'
 
 function App() {
-  console.log("Hello")
   const [session, setSession] = useState(null)
   const [activeView, setActiveView] = useState('overview')
 
@@ -133,20 +132,17 @@ function App() {
         <section className="auth-card">
           <aside className="auth-card__story">
             <BrandLogo light />
+            <div className="auth-card__art" aria-hidden="true">
+              <svg viewBox="0 0 64 64" focusable="false">
+                <path d="m8 26 24-14 24 14-24 14-24-14Z" />
+                <path d="M18 33v14c8 8 20 8 28 0V33" />
+                <path d="M56 26v20" />
+              </svg>
+            </div>
             <div className="auth-card__story-copy">
-              <p className="auth-card__overline">UNE NOUVELLE FAÇON D’APPRENDRE</p>
-              <h2>Apprenez à votre rythme, allez plus loin.</h2>
-              <p>Des parcours clairs, des ressources utiles et un espace conçu pour vous faire avancer.</p>
+              <h2>Votre prochain chapitre commence ici.</h2>
+              <p>Un espace pour les esprits curieux. Apprenez quelque chose qui vous restera.</p>
             </div>
-            <div className="learning-preview" aria-hidden="true">
-              <div className="learning-preview__back-card"><span>✦</span><strong>Explorer</strong><small>De nouvelles idées</small></div>
-              <div className="learning-preview__front-card">
-                <span className="learning-preview__badge">OPEN CAMPUS</span>
-                <strong>Votre prochain chapitre commence ici.</strong>
-                <div className="learning-preview__progress"><span /></div>
-              </div>
-            </div>
-            <p className="auth-card__quote">Faites de la place pour votre prochaine idée.</p>
           </aside>
           <div className="auth-card__form">
             <LoginForm onSubmit={handleLogin} />

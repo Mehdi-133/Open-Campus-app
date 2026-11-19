@@ -113,13 +113,21 @@ export function LearnerDashboard({ coursesError, coursesStatus, enrollments, onL
     <div className="learner-dashboard" aria-label="Espace apprenant">
       <div className="learner-dashboard__main">
         <header className="learner-greeting">
-          <p className="eyebrow">VOTRE ESPACE APPRENANT</p>
-          <h2>
-            {firstName
-              ? `Bonjour ${firstName}, prêt à poursuivre votre apprentissage ?`
-              : 'Prêt à poursuivre votre apprentissage ?'}
-          </h2>
-          <p>Vos cours inscrits et votre progression apparaissent ici, uniquement après votre demande.</p>
+          <article className="learner-greeting__hero">
+            <div>
+              <p className="learner-greeting__overline">VOTRE ESPACE APPRENANT</p>
+              <h2>
+                {firstName
+                  ? `Bonjour ${firstName}, prêt à poursuivre votre apprentissage ?`
+                  : 'Prêt à poursuivre votre apprentissage ?'}
+              </h2>
+              <p>Vos cours inscrits et votre progression apparaissent ici, uniquement après votre demande.</p>
+            </div>
+            <div className="learner-greeting__ring" aria-hidden="true">
+              {coursesStatus === 'success' ? `${average}%` : '—'}
+              <small>PROGRESSION</small>
+            </div>
+          </article>
         </header>
 
         {coursesStatus === 'idle' ? (
