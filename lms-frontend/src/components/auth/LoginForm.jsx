@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { FormField } from './FormField.jsx'
+import { FormField } from '../common/FormField.jsx'
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 

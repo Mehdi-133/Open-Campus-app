@@ -4,15 +4,16 @@ import { createAdminUser, getAdminUsers, updateAdminUser } from './api/adminUser
 import { getCurrentUser, login } from './api/auth.js'
 import { getMyEnrollments } from './api/enrollments.js'
 import { ApiError } from './api/client.js'
-import { BrandLogo } from './components/BrandLogo.jsx'
-import { AdminLayout } from './components/AdminLayout.jsx'
-import { LearnerLayout } from './components/LearnerLayout.jsx'
-import { UnsupportedRoleNotice } from './components/UnsupportedRoleNotice.jsx'
-import { ADMIN_NAVIGATION, LEARNER_NAVIGATION } from './components/navigation.js'
-import { LoginForm } from './components/LoginForm.jsx'
+import { BrandLogo } from './components/common/BrandLogo.jsx'
+import { AdminLayout } from './components/layout/AdminLayout.jsx'
+import { LearnerLayout } from './components/layout/LearnerLayout.jsx'
+import { UnsupportedRoleNotice } from './components/common/UnsupportedRoleNotice.jsx'
+import { ADMIN_NAVIGATION, LEARNER_NAVIGATION } from './components/layout/navigation.js'
+import { LoginForm } from './components/auth/LoginForm.jsx'
 import './App.css'
 
 function App() {
+  console.log("Hello")
   const [session, setSession] = useState(null)
   const [activeView, setActiveView] = useState('overview')
 

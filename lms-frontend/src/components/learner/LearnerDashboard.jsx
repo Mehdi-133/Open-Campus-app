@@ -4,8 +4,8 @@ import {
   labelFor,
   progressFor,
   usableEnrollments,
-} from './courseLabels.js'
-import { initialFor, labelFor as userLabelFor, STATUS_LABELS } from './userLabels.js'
+} from '../courses/courseLabels.js'
+import { initialFor, labelFor as userLabelFor, STATUS_LABELS } from '../users/userLabels.js'
 
 const USER_STATUS_TONES = {
   active: 'active',

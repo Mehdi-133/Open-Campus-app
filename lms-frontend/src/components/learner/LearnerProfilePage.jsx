@@ -1,4 +1,4 @@
-import { initialFor, labelFor, ROLE_LABELS, STATUS_LABELS } from './userLabels.js'
+import { initialFor, labelFor, ROLE_LABELS, STATUS_LABELS } from '../users/userLabels.js'
 
 const STATUS_TONES = {
   active: 'active',
