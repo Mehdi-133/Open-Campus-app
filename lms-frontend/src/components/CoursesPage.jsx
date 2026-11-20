@@ -1,18 +1,13 @@
 import { useState } from 'react'
+import { ALL_FILTER, matchesCourseFilters } from './courseFilters.js'
+import { CourseFilters } from './CourseFilters.jsx'
 import { CourseList } from './CourseList.jsx'
-import { COURSE_STATUS_LABELS, labelFor } from './courseLabels.js'
 
 const IDLE = 'idle'
 const LOADING = 'loading'
 const SUCCESS = 'success'
 const ERROR = 'error'
 const FORBIDDEN = 'forbidden'
-
-const STATUS_FILTERS = ['all', 'draft', 'published', 'archived']
-
-function filterLabel(id) {
-  return id === 'all' ? 'Tous les statuts' : labelFor(COURSE_STATUS_LABELS, id)
-}
 
 export function CoursesLoading() {
   return (
@@ -64,7 +59,17 @@ export function CoursesPage({ onLoadCourses }) {
   const [status, setStatus] = useState(IDLE)
   const [courses, setCourses] = useState([])
   const [error, setError] = useState('')
-  const [statusFilter, setStatusFilter] = useState('all')
+  const [keywordFilter, setKeywordFilter] = useState('')
+  const [levelFilter, setLevelFilter] = useState(ALL_FILTER)
+  const [categoryFilter, setCategoryFilter] = useState(ALL_FILTER)
+  const [statusFilter, setStatusFilter] = useState(ALL_FILTER)
+
+  function resetFilters() {
+    setKeywordFilter('')
+    setLevelFilter(ALL_FILTER)
+    setCategoryFilter(ALL_FILTER)
+    setStatusFilter(ALL_FILTER)
+  }
 
   async function loadCourses() {
     if (status === LOADING) {
@@ -73,7 +78,7 @@ export function CoursesPage({ onLoadCourses }) {
 
     setStatus(LOADING)
     setError('')
-    setStatusFilter('all')
+    resetFilters()
 
     try {
       const nextCourses = await onLoadCourses()
@@ -86,15 +91,17 @@ export function CoursesPage({ onLoadCourses }) {
     }
   }
 
-  // Counts and the visible list are derived during render from the server data
-  // and one local filter. No second list is stored in state.
-  const counts = courses.reduce(
-    (totals, course) => ({ ...totals, [course.status]: (totals[course.status] || 0) + 1 }),
-    { draft: 0, published: 0, archived: 0 },
-  )
-  const filteredCourses = statusFilter === 'all'
-    ? courses
-    : courses.filter((course) => course.status === statusFilter)
+  // The visible list is derived during render from the server data and both
+  // local filters. No second list is stored in state and no request is made.
+  const activeFilters = {
+    category: categoryFilter,
+    keyword: keywordFilter,
+    level: levelFilter,
+    status: statusFilter,
+  }
+  const filteredCourses = courses.filter((course) => (
+    matchesCourseFilters(course, activeFilters)
+  ))
   const hasCourses = status === SUCCESS && courses.length > 0
 
   return (
@@ -105,7 +112,7 @@ export function CoursesPage({ onLoadCourses }) {
           <p className="courses-page__description">
             Consultez le titre, la catégorie, le niveau et le statut de tous les cours,
             qu’ils soient en brouillon, publiés ou archivés. La liste n’est demandée
-            au serveur qu’à partir du bouton ci-dessous.
+            au serveur qu’à partir du bouton ci-dessous ; les filtres restent locaux.
           </p>
         </div>
         <div className="courses-page__actions">
@@ -137,35 +144,35 @@ export function CoursesPage({ onLoadCourses }) {
 
         {hasCourses ? (
           <>
-            <div className="courses-page__filters" role="group" aria-label="Filtrer par statut">
-              <div className="courses-page__filter-list">
-                {STATUS_FILTERS.map((id) => (
-                  <button
-                    aria-pressed={statusFilter === id}
-                    className="courses-page__filter"
-                    key={id}
-                    onClick={() => setStatusFilter(id)}
-                    type="button"
-                  >
-                    {filterLabel(id)}{id === 'all' ? '' : ` (${counts[id]})`}
-                  </button>
-                ))}
-              </div>
-              <p className="courses-page__count">
-                {filteredCourses.length} cours affiche(s) sur {courses.length}
-              </p>
-            </div>
+            <CourseFilters
+              category={categoryFilter}
+              courses={courses}
+              keyword={keywordFilter}
+              level={levelFilter}
+              onCategoryChange={setCategoryFilter}
+              onKeywordChange={setKeywordFilter}
+              onLevelChange={setLevelFilter}
+              onReset={resetFilters}
+              onStatusChange={setStatusFilter}
+              resultCount={filteredCourses.length}
+              status={statusFilter}
+              totalCount={courses.length}
+            />
 
             {filteredCourses.length > 0 ? (
               <CourseList courses={filteredCourses} />
             ) : (
               <div className="users-page__state">
                 <div>
-                  <h3>Aucun cours pour ce statut</h3>
-                  <p>Choisissez un autre statut ou affichez le catalogue complet.</p>
+                  <h3>Aucun cours pour cette combinaison</h3>
+                  <p>Aucun cours ne correspond à la catégorie et au statut sélectionnés.</p>
                 </div>
-                <button className="users-page__retry" onClick={() => setStatusFilter('all')} type="button">
-                  Afficher tous les statuts
+                <button
+                  className="users-page__retry"
+                  onClick={resetFilters}
+                  type="button"
+                >
+                  Réinitialiser les filtres
                 </button>
               </div>
             )}

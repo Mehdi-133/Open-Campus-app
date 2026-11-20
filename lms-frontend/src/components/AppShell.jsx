@@ -31,6 +31,7 @@ export function AppShell({ activeView, navigation, onLogout, onNavigate, roleLab
     <div className="app-shell">
       <aside className="app-sidebar">
         <div className="app-brand"><BrandMark /><span>Open Campus</span></div>
+        <p className="app-sidebar__label">WORKSPACE</p>
         <nav className="app-navigation" aria-label="Navigation principale">
           {navigation.map((item) => (
             <button
@@ -54,6 +55,7 @@ export function AppShell({ activeView, navigation, onLogout, onNavigate, roleLab
             <span className="app-header__context">{roleLabel} / Espace de travail</span>
             <h1>{currentPage.label}</h1>
           </div>
+          <span className="app-header__pill">Espace de travail</span>
           <div className="account-actions">
             <div className="account-chip" role="group" aria-label={`Compte ${displayName} — ${roleLabel}`}>
               <span className="account-chip__avatar" aria-hidden="true">
@@ -68,10 +70,6 @@ export function AppShell({ activeView, navigation, onLogout, onNavigate, roleLab
           </div>
         </header>
         <main className="app-content">
-          <div className="app-content__heading">
-            <p className="eyebrow">{roleLabel === 'Admin' ? 'PORTAIL ADMINISTRATEUR' : 'VOTRE APPRENTISSAGE'}</p>
-            <h2>{currentPage.label}</h2>
-          </div>
           {children}
         </main>
       </div>
