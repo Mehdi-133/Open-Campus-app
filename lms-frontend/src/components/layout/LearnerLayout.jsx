@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { AppShell } from './AppShell.jsx'
-import { LearnerDashboard } from './LearnerDashboard.jsx'
-import { LearnerProfilePage } from './LearnerProfilePage.jsx'
+import { LearnerDashboard } from '../learner/LearnerDashboard.jsx'
+import { LearnerProfilePage } from '../learner/LearnerProfilePage.jsx'
 import { LEARNER_NAVIGATION } from './navigation.js'
 
 function InformationPanel({ title, description }) {

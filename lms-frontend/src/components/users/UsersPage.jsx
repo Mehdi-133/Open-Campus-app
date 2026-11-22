@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ApiError } from '../api/client.js'
+import { ApiError } from '../../api/client.js'
 import { UserDetailsPanel } from './UserDetailsPanel.jsx'
 import { UserFilters } from './UserFilters.jsx'
 import { UserForm } from './UserForm.jsx'

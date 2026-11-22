@@ -1,6 +1,6 @@
 import { AppShell } from './AppShell.jsx'
-import { CoursesPage } from './CoursesPage.jsx'
-import { UsersPage } from './UsersPage.jsx'
+import { CoursesPage } from '../courses/CoursesPage.jsx'
+import { UsersPage } from '../users/UsersPage.jsx'
 import { ADMIN_NAVIGATION } from './navigation.js'
 
 function AdminDashboard({ onNavigate }) {
