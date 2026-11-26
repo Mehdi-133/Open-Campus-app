@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { BrandLogo } from "../components/common/BrandLogo.jsx";
 import { LoginForm } from "../components/auth/LoginForm.jsx";
-import { useAuth } from "../contexts/AuthContext.jsx";
+import { useAuth } from "../hooks/useAuth.js";
 
 export function LoginPage() {
   const { login } = useAuth();
