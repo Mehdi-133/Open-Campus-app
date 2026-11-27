@@ -1,5 +1,5 @@
 import { ApiError } from "../api/client.js";
-import { getMyEnrollments } from "../api/enrollments.js";
+import { getMyEnrollments } from "../api/enrollments/enrollments.js";
 
 export function useLearner(session, onUnauthorized) {
   async function loadEnrollments() {

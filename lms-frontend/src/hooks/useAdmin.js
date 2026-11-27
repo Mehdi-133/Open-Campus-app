@@ -4,9 +4,9 @@ import {
   getAdminUsers,
   createAdminUser,
   updateAdminUser,
-} from "../api/adminUsers.js";
+} from "../api/admin/adminUsers.js";
 
-import { getAdminCourses } from "../api/adminCourses.js";
+import { getAdminCourses } from "../api/admin/adminCourses.js";
 
 export function useAdmin(session, onUnauthorized) {
   function checkAdminAccess() {

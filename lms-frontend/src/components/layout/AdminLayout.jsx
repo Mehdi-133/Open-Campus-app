@@ -1,61 +1,44 @@
-import { AppShell } from './AppShell.jsx'
-import { CoursesPage } from '../courses/CoursesPage.jsx'
-import { UsersPage } from '../users/UsersPage.jsx'
-import { ADMIN_NAVIGATION } from './navigation.js'
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useAdmin } from "../../hooks/useAdmin.js";
+import { useAuth } from "../../hooks/useAuth.js";
+import { AppShell } from "./AppShell.jsx";
+import { ADMIN_NAVIGATION } from "./navigation.js";
 
-function AdminDashboard({ onNavigate }) {
-  return (
-    <section className="dashboard-grid" aria-label="Espace administrateur">
-      <article className="dashboard-hero dashboard-hero--admin">
-        <p className="dashboard-hero__eyebrow">OPEN CAMPUS · ADMIN</p>
-        <h3>Faites grandir votre communauté d’apprentissage.</h3>
-        <p>Retrouvez les espaces de gestion des utilisateurs et des cours.</p>
-      </article>
-      <aside className="dashboard-side-card">
-        <span className="dashboard-side-card__icon" aria-hidden="true">✦</span>
-        <h3>Votre espace admin</h3>
-        <p>Les outils disponibles dépendent des autorisations confirmées par le serveur.</p>
-      </aside>
-      <section className="dashboard-section">
-        <div className="dashboard-section__heading">
-          <div><p className="eyebrow">GESTION DE LA PLATEFORME</p><h3>Vos espaces</h3></div>
-        </div>
-        <div className="management-grid">
-          <button className="management-card" type="button" onClick={() => onNavigate('users')}>
-            <span className="management-card__icon management-card__icon--mint" aria-hidden="true">♙</span>
-            <h4>Utilisateurs</h4>
-            <p>Accédez aux comptes et aux rôles de la plateforme.</p>
-            <span className="management-card__arrow" aria-hidden="true">→</span>
-          </button>
-          <button className="management-card" type="button" onClick={() => onNavigate('courses')}>
-            <span className="management-card__icon management-card__icon--yellow" aria-hidden="true">▤</span>
-            <h4>Cours</h4>
-            <p>Accédez au catalogue de cours.</p>
-            <span className="management-card__arrow" aria-hidden="true">→</span>
-          </button>
-        </div>
-      </section>
-    </section>
-  )
-}
+const PATHS = {
+  overview: "/admin",
+  users: "/admin/users",
+  courses: "/admin/courses",
+};
 
-export function AdminLayout({ activeView, onCreateUser, onLoadCourses, onLoadUsers, onLogout, onNavigate, onUpdateUser, user }) {
+export function AdminLayout() {
+  const { token, user, logout } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const admin = useAdmin({ token, user }, logout);
+
+  const activeView =
+    ADMIN_NAVIGATION.find((item) => PATHS[item.id] === location.pathname)?.id ||
+    "overview";
+
+  function navigateTo(viewId) {
+    navigate(PATHS[viewId] || PATHS.overview);
+  }
+
+  function handleLogout() {
+    logout();
+    navigate("/login", { replace: true });
+  }
+
   return (
     <AppShell
       activeView={activeView}
       navigation={ADMIN_NAVIGATION}
-      onLogout={onLogout}
-      onNavigate={onNavigate}
+      onLogout={handleLogout}
+      onNavigate={navigateTo}
       roleLabel="Admin"
       user={user}
     >
-      {activeView === 'overview' ? (
-        <AdminDashboard onNavigate={onNavigate} />
-      ) : activeView === 'users' ? (
-        <UsersPage onCreateUser={onCreateUser} onLoadUsers={onLoadUsers} onUpdateUser={onUpdateUser} />
-      ) : (
-        <CoursesPage onLoadCourses={onLoadCourses} />
-      )}
+      <Outlet context={{ ...admin, navigateTo }} />
     </AppShell>
-  )
+  );
 }

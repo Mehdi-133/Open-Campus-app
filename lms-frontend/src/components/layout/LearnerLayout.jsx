@@ -1,77 +1,78 @@
-import { useState } from 'react'
-import { AppShell } from './AppShell.jsx'
-import { LearnerDashboard } from '../learner/LearnerDashboard.jsx'
-import { LearnerProfilePage } from '../learner/LearnerProfilePage.jsx'
-import { LEARNER_NAVIGATION } from './navigation.js'
+import { useState } from "react";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth.js";
+import { useLearner } from "../../hooks/useLearner.js";
+import { AppShell } from "./AppShell.jsx";
+import { LEARNER_NAVIGATION } from "./navigation.js";
 
-function InformationPanel({ title, description }) {
-  return (
-    <section className="information-panel" aria-live="polite">
-      <span className="information-panel__icon" aria-hidden="true">i</span>
-      <div><h3>{title}</h3><p>{description}</p></div>
-    </section>
-  )
-}
+const PATHS = {
+  overview: "/dashboard",
+  courses: "/learner/courses",
+  profile: "/learner/profile",
+};
 
-export function LearnerLayout({ activeView, onLoadEnrollments, onLogout, onNavigate, user }) {
-  // Enrollment request state lives here: the dashboard and the future "Mes cours"
-  // view both read the same list, so the closest common parent owns it.
-  const [coursesStatus, setCoursesStatus] = useState('idle')
-  const [enrollments, setEnrollments] = useState([])
-  const [coursesError, setCoursesError] = useState('')
+export function LearnerLayout() {
+  const { token, user, logout } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { loadEnrollments } = useLearner({ token, user }, logout);
 
-  const pageTitle = LEARNER_NAVIGATION.find((item) => item.id === activeView)?.label
+  // Enrollment state lives in the layout so the dashboard and "Mes cours"
+  // both read the same server-confirmed list while navigating between routes.
+  const [coursesStatus, setCoursesStatus] = useState("idle");
+  const [enrollments, setEnrollments] = useState([]);
+  const [coursesError, setCoursesError] = useState("");
+
+  const activeView =
+    LEARNER_NAVIGATION.find((item) => PATHS[item.id] === location.pathname)?.id ||
+    "overview";
 
   async function loadCourses() {
-    if (coursesStatus === 'loading') {
-      return
+    if (coursesStatus === "loading") {
+      return;
     }
 
-    setCoursesStatus('loading')
-    setCoursesError('')
+    setCoursesStatus("loading");
+    setCoursesError("");
 
     try {
-      const nextEnrollments = await onLoadEnrollments()
-      setEnrollments(Array.isArray(nextEnrollments) ? nextEnrollments : [])
-      setCoursesStatus('success')
+      const nextEnrollments = await loadEnrollments();
+      setEnrollments(Array.isArray(nextEnrollments) ? nextEnrollments : []);
+      setCoursesStatus("success");
     } catch (requestError) {
-      setEnrollments([])
-      setCoursesError(requestError?.message || 'La demande a échoué. Réessayez.')
-      setCoursesStatus(requestError?.status === 403 ? 'forbidden' : 'error')
+      setEnrollments([]);
+      setCoursesError(requestError?.message || "La demande a échoué. Réessayez.");
+      setCoursesStatus(requestError?.status === 403 ? "forbidden" : "error");
     }
+  }
+
+  function navigateTo(viewId) {
+    navigate(PATHS[viewId] || PATHS.overview);
+  }
+
+  function handleLogout() {
+    logout();
+    navigate("/login", { replace: true });
   }
 
   return (
     <AppShell
       activeView={activeView}
       navigation={LEARNER_NAVIGATION}
-      onLogout={onLogout}
-      onNavigate={onNavigate}
+      onLogout={handleLogout}
+      onNavigate={navigateTo}
       roleLabel="Apprenant"
       user={user}
     >
-      {activeView === 'overview' ? (
-        <LearnerDashboard
-          coursesError={coursesError}
-          coursesStatus={coursesStatus}
-          enrollments={enrollments}
-          onLoadCourses={loadCourses}
-          onNavigate={onNavigate}
-          user={user}
-        />
-      ) : activeView === 'profile' ? (
-        <LearnerProfilePage user={user} />
-      ) : (
-        <>
-          <div className="app-content__heading app-content__heading--section">
-            <h2>{pageTitle}</h2>
-          </div>
-          <InformationPanel
-            title="Vos cours confirmés apparaîtront ici"
-            description="Cette vue présentera vos inscriptions et leur progression à partir de la liste chargée depuis l’accueil."
-          />
-        </>
-      )}
+      <Outlet
+        context={{
+          coursesError,
+          coursesStatus,
+          enrollments,
+          loadCourses,
+          navigateTo,
+        }}
+      />
     </AppShell>
-  )
+  );
 }

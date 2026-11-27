@@ -1,17 +1,24 @@
-import { ApiError, request } from './client.js'
+import { ApiError, instance, toApiError } from "../client.js";
 
-// GET /api/enrollments/me returns a bare array of enrollments whose course is populated.
-// The contract is documented in fondations_API_LMS/docs/react-api-contract.md.
-export async function getMyEnrollments(token) {
+// GET /api/enrollments/me returns a bare array whose course field is populated.
+export async function getMyEnrollments(token, signal) {
   if (!token) {
-    throw new ApiError('Vous devez être connecté pour charger vos cours.', 401)
+    throw new ApiError("Vous devez être connecté pour charger vos cours.", 401);
   }
 
-  const data = await request('/enrollments/me', { token })
+  try {
+    const response = await instance.get("/enrollments/me", {
+      headers: { Authorization: `Bearer ${token}` },
+      signal,
+    });
+    const enrollments = response?.data;
 
-  if (!Array.isArray(data)) {
-    throw new ApiError('La liste des inscriptions renvoyée par le serveur est invalide.')
+    if (!Array.isArray(enrollments)) {
+      throw new ApiError("La liste des inscriptions renvoyée par le serveur est invalide.");
+    }
+
+    return enrollments;
+  } catch (error) {
+    throw toApiError(error, "Impossible de charger vos cours.");
   }
-
-  return data
 }
