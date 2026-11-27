@@ -3,10 +3,32 @@ import { BrandLogo } from "../components/common/BrandLogo.jsx";
 import { LoginForm } from "../components/auth/LoginForm.jsx";
 import { useAuth } from "../hooks/useAuth.js";
 
-function homeForRole(role) {
-  if (role === "admin") return "/admin/users";
-  if (role === "trainer") return "/trainer/courses";
-  return "/dashboard";
+const HOME_BY_ROLE = {
+  admin: "/admin/users",
+  trainer: "/trainer/courses",
+  learner: "/dashboard",
+};
+
+const ROLE_PREFIX = {
+  admin: "/admin",
+  trainer: "/trainer",
+  learner: "/learner",
+};
+
+// A "from" left by an earlier session must not send the new user into a route
+// that their role cannot open. Guards remain the authority on the server side.
+function canReturnTo(role, pathname) {
+  if (typeof pathname !== "string") {
+    return false;
+  }
+
+  if (pathname === "/dashboard") {
+    return role === "learner";
+  }
+
+  const prefix = ROLE_PREFIX[role];
+
+  return Boolean(prefix) && pathname.startsWith(prefix);
 }
 
 export function LoginPage() {
@@ -16,12 +38,13 @@ export function LoginPage() {
 
   async function handleLogin(credentials) {
     const session = await login(credentials);
+    const role = session.user?.role;
     const from = location.state?.from;
-    const destination = from
+    const destination = canReturnTo(role, from?.pathname)
       ? `${from.pathname}${from.search || ""}${from.hash || ""}`
-      : homeForRole(session.user?.role);
+      : HOME_BY_ROLE[role] || HOME_BY_ROLE.learner;
 
-    navigate(destination, { replace: true });
+    navigate(destination, { replace: true, state: null });
   }
 
   return (

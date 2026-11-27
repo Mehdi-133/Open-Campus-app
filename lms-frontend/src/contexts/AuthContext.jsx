@@ -69,7 +69,7 @@ export function AuthProvider({ children }) {
         ) {
           clearStoredToken();
           setSession(null);
-          navigate("/login", { replace: true });
+          navigate("/login", { replace: true, state: null });
         }
         return Promise.reject(error);
       },
