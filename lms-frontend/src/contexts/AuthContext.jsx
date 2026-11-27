@@ -12,6 +12,7 @@ import {
   storeToken,
 } from "../api/client.js";
 import { getCurrentUser, login as loginRequest } from "../api/auth";
+import { SessionLoading } from "../components/common/SessionLoading.jsx";
 import { AuthContext } from "./authContext.js";
 
 export function AuthProvider({ children }) {
@@ -100,13 +101,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider value={value}>
-      {loading ? (
-        <main className="session-placeholder" role="status">
-          <h1>Chargement de la session…</h1>
-        </main>
-      ) : (
-        children
-      )}
+      {loading ? <SessionLoading /> : children}
     </AuthContext.Provider>
   );
 }

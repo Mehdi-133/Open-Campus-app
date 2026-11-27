@@ -1,19 +1,27 @@
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { BrandLogo } from "../components/common/BrandLogo.jsx";
 import { LoginForm } from "../components/auth/LoginForm.jsx";
 import { useAuth } from "../hooks/useAuth.js";
 
+function homeForRole(role) {
+  if (role === "admin") return "/admin/users";
+  if (role === "trainer") return "/trainer/courses";
+  return "/dashboard";
+}
+
 export function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   async function handleLogin(credentials) {
     const session = await login(credentials);
-    const role = session.user?.role;
-    if (role === "admin") navigate("/admin/users", { replace: true });
-    else if (role === "trainer")
-      navigate("/trainer/courses", { replace: true });
-    else navigate("/dashboard", { replace: true });
+    const from = location.state?.from;
+    const destination = from
+      ? `${from.pathname}${from.search || ""}${from.hash || ""}`
+      : homeForRole(session.user?.role);
+
+    navigate(destination, { replace: true });
   }
 
   return (
